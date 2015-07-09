@@ -17,24 +17,83 @@ Perso_update:
     ;[ebp + 8] = first param
     ;[ebp + 12] = second param (assuming dword size)
 
-    sub  esp, 16
+    sub  esp, 8
     mov  eax, [ebp + 8]
-
     fld  qword [delta_time]
     fmul dword [eax + Perso.velocity + Vector2.x]
-    fstp dword [ebp - 4]
+    fstp dword [esp]
 
-;    fld  qword [delta_time]
-;    fmul dword [eax + Perso.velocity + Vector2.y]
-;    fstp qword [ebp - 8]
+    fld  qword [delta_time]
+    fmul dword [eax + Perso.velocity + Vector2.y]
+    fstp dword [esp + 4]
 
-    push dword [ebp - 4]
-    push int_patern
-    call printf
-    add  esp, 8
+;    push dword [ebp - 4]
+;    call print_dword_float
+;    push dword [ebp - 8]
+;    call print_dword_float
 
-    add esp, 16
+    mov  eax, [ebp + 8]
+    push dword [eax + Perso.sprite]
+    call sfSprite_move
+    add esp, 20
+
+Perso_update_end:
     mov esp, ebp
     pop ebp
     ret
-Perso_update_end:
+
+;void Perso_draw(Perso*, sfWindow*)
+Perso_draw:
+    push ebp
+    mov  ebp, esp
+
+    push dword 0x0 ;renderstate pointer
+    mov  eax, [ebp + 8]
+    push dword [eax + Perso.sprite]
+    push dword [ebp + 12]
+    call sfRenderWindow_drawSprite
+    add  esp, 12
+
+Perso_draw_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
+;Perso* Perso_create(void)
+Perso_create:
+    push ebp
+    mov  ebp, esp
+
+    push Perso.size
+    call malloc
+    mov  [ebp - 4], eax
+
+    call sfSprite_create
+    mov  ebx, [ebp - 4]
+    mov dword [ebx + Perso.sprite], dword eax
+
+    push 0x0 ;rect pointer
+    push dword [ebp + 8] ; param 1
+    call sfTexture_createFromFile
+    add esp, 8
+    mov  ebx, [ebp - 4]
+    mov dword [ebx + Perso.texture], dword eax
+
+    push 0x1 ;reset rect
+    push dword [ebx + Perso.texture]
+    push dword [ebx + Perso.sprite]
+    call sfSprite_setTexture
+    add  esp, 12
+
+    mov  ebx, [ebp - 4]
+    mov  eax, dword [float_const_2]
+    mov  [ebx + Perso.velocity + Vector2.x], eax
+    mov  eax, dword [float_const_0]
+    mov  [ebx + Perso.velocity + Vector2.y], eax
+
+    mov  eax, [ebp - 4]
+
+Perso_create_end:
+    mov esp, ebp
+    pop ebp
+    ret

@@ -21,21 +21,28 @@ SECTION .data
 
     window_title db 'Super Duper Window From Asm', 0
 
-    window dd 1
-
-    delta_clock dd 1
-    delta_time dq 1
-
     microsecond_to_second dd 0.000001
 
     float_test1 dd 2.55
     float_test2 dd 1.44
     float_result dq 1.44
 
-SECTION .bss
-    event resb sfEvent.size
+    float_const_0 dd 0.0
+    float_const_2 dd 2.0
+    float_const_3 dd 3.0
+    float_const_4 dd 4.0
+    float_const_100 dd 100.0
 
-    perso resb Perso.size
+SECTION .bss
+    window resd 1
+
+    delta_clock resd 1
+    delta_time resq 1
+    total_time resq 1
+
+    perso_array resb Array.size
+
+    event resb sfEvent.size
 
 SECTION .text
 
@@ -44,47 +51,96 @@ main:
     push ebp
     mov  ebp, esp
 
+    push 0x0 ;NULL
+    call time
+    add  esp, 4
+
+    push eax
+    call srand
+    add  esp, 4
+
     push 0x0            ;context setting pointer
     push 0111b          ;window style (titlebar + resize + close)
     push window_title   ;window title
     push 0x20           ;videomode bytedepth
     push 0x258          ;videomode height
-    push 0x300          ;videomode width
+    push 0x320          ;videomode width
     call sfRenderWindow_create
     add  esp, 24
     mov dword [window], dword eax  ;save the window addresses
 
-    push 0x0 ;rect pointer
-    push perso_texture_file
-    call sfTexture_createFromFile
-    add esp, 8
-    mov dword [perso + Perso.texture], dword eax
-
-    call sfSprite_create
-    mov dword [perso + Perso.sprite], dword eax
-
-    push 0x1 ;reset rect
-    push dword [perso + Perso.texture]
-    push dword [perso + Perso.sprite]
-    call sfSprite_setTexture
-    add  esp, 12
-
-    mov  dword [perso + Perso.velocity + Vector2.x], dword 0x2
-    mov  dword [perso + Perso.velocity + Vector2.y], dword 0x2
-
     call sfClock_create
     mov dword [delta_clock], dword eax
+
+    push dword 0x1 ;isPointer
+    push dword 100 ;count
+    push dword 4 ;dataSize
+    push perso_array ;Array*
+    call Array_init
+    add  esp, 16
+
+    xor edx, edx
+    perso_array_init_loop:
+        cmp edx, [perso_array + Array.count]
+        jz perso_array_init_loop_end
+
+        push edx
+
+        push perso_texture_file
+        call Perso_create
+        add  esp, 4
+
+        push eax
+        push eax
+
+        push dword [float_const_100]
+        push dword [float_const_2]
+        call rand_float_min_max
+        add  esp, 8
+
+        pop edx
+
+        mov [edx + Perso.velocity + Vector2.x], eax
+
+        push edx
+
+        push dword [float_const_100]
+        push dword [float_const_2]
+        call rand_float_min_max
+        add  esp, 8
+
+        pop edx
+
+        mov [edx + Perso.velocity + Vector2.y], eax
+
+        pop eax
+        pop edx
+
+        mov  ebx, [perso_array + Array.dataSize]
+        imul ebx, edx
+
+        mov  ecx, [perso_array + Array.start]
+        mov  dword [ecx + ebx], eax
+
+        inc edx
+        jmp perso_array_init_loop
+    perso_array_init_loop_end:
+
+    mov  eax, [float_const_100]
+    mov  ebx, [perso_array + Array.start]
+    mov  edx, [ebx]
+    mov  [edx + Perso.velocity + Vector2.y], eax
 
     push msg
     call printf
     add  esp, 4
 
-;    fld  dword [float_test1] ;do addition using FPU
-;    fadd dword [float_test2]
-;    fstp qword [float_result]
-    movsd xmm0, [float_test1] ;do addition using SSE
-    addsd xmm0, [float_test2]
-    movsd [float_result], xmm0
+    fld  dword [float_test1] ;do addition using FPU
+    fadd dword [float_test2]
+    fstp qword [float_result]
+;    movsd xmm0, [float_test1] ;do addition using SSE
+;    addsd xmm0, [float_test2]
+;    movsd [float_result], xmm0
 
     push dword [float_result+4]
     push dword [float_result]
@@ -117,22 +173,40 @@ main_loop:
 
     push dword [delta_clock]
     push dword delta_time       ;long long pointer
-    call sfClock_getElapsedTime
+    call sfClock_restart
     add  esp, 4
 
     fld  dword [microsecond_to_second] ;convert the time to second
     fimul dword [delta_time]
-    fstp qword [delta_time]
+    fst qword [delta_time]
+    fadd qword [total_time] ;add the delta time to total times
+    fstp qword [total_time]
 
-    push dword [delta_time + 4] ; print the time
-    push dword [delta_time]
+    push dword [total_time + 4] ; print the time
+    push dword [total_time]
     push float_patern
     call printf
     add  esp, 12
 
-    push dword perso
-    call Perso_update
-    add  esp, 4
+    xor edx, edx
+    perso_array_update_loop:
+        cmp edx, [perso_array + Array.count]
+        jz perso_array_update_loop_end
+
+        push edx
+
+        mov  ebx, edx
+        imul  ebx, [perso_array + Array.dataSize]
+        mov  eax, [perso_array + Array.start]
+        push dword [eax + ebx]
+        call Perso_update
+        add  esp, 4
+
+        pop edx
+
+        inc edx
+        jmp perso_array_update_loop
+    perso_array_update_loop_end:
 
 ;    push word 0xFF ;a
 ;    push word 0xFF ;g
@@ -143,11 +217,26 @@ main_loop:
     call sfRenderWindow_clear
     add  esp, 8
 
-    push dword 0x0 ;renderstate pointer
-    push dword [perso + Perso.sprite]
-    push dword [window]
-    call sfRenderWindow_drawSprite
-    add  esp, 12
+    xor edx, edx
+    perso_array_draw_loop:
+        cmp edx, [perso_array + Array.count]
+        jz perso_array_draw_loop_end
+
+        push edx
+
+        push dword [window]
+        mov  ebx, edx
+        imul  ebx, [perso_array + Array.dataSize]
+        mov  eax, [perso_array + Array.start]
+        push dword [eax + ebx]
+        call Perso_draw
+        add  esp, 8
+
+        pop edx
+
+        inc edx
+        jmp perso_array_draw_loop
+    perso_array_draw_loop_end:
 
     push dword [window]
     call sfRenderWindow_display
@@ -172,11 +261,11 @@ handle_key_event:
 ;	fstp dword [esp]		; push our float onto the stack
 
     ;we already know it's in the good format so we just push it
-    push dword [float_test1]
-    push dword [float_test2]
-    push dword [perso + Perso.sprite]
-    call sfSprite_move
-    add  esp, 12
+;    push dword [float_test1]
+;    push dword [float_test2]
+;    push dword [perso + Perso.sprite]
+;    call sfSprite_move
+;    add  esp, 12
 
     cmp dword [event + sfKeyEvent.keyCode], KEY_Left
     jz  case_key_left

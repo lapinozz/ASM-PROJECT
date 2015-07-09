@@ -1,5 +1,5 @@
-%ifndef MACROS_MAC
-%define MACROS_MAC
+%ifndef HEARDER_GARD_VECTOR2
+%define HEARDER_GARD_VECTOR2
 
 struc Vector2
     .x resd 1
