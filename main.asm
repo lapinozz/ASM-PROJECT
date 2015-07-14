@@ -33,6 +33,7 @@ SECTION .data
     float_const_2 dd 2.0
     float_const_3 dd 3.0
     float_const_4 dd 4.0
+    float_const_10 dd 10.0
     float_const_100 dd 100.0
 
 SECTION .bss
@@ -45,9 +46,6 @@ SECTION .bss
     perso_array resb Array.size
 
     event resb sfEvent.size
-
-    vertexArray resd 1
-    vertex      resb sfVertex.size
 
     map         resb Map.size
 
@@ -157,9 +155,6 @@ main:
     fld  dword [float_test1] ;do addition using FPU
     fadd dword [float_test2]
     fstp qword [float_result]
-;    movsd xmm0, [float_test1] ;do addition using SSE
-;    addsd xmm0, [float_test2]
-;    movsd [float_result], xmm0
 
     push dword [float_result+4]
     push dword [float_result]
@@ -172,9 +167,6 @@ main:
     call sfTexture_createFromFile
     add esp, 8
     mov [mapTexture], eax
-
-    call sfVertexArray_create
-    mov  [vertexArray], eax
 
     mov eax, [float_const_0]
     mov ebx, [float_const_1]
@@ -194,47 +186,6 @@ main:
 
     mov eax,  dword [mapTexture]
     mov [renderState + sfRenderStates.texture],  eax
-
-    push sfQuads
-    push dword [vertexArray]
-    call sfVertexArray_setPrimitiveType
-    add  esp, 8
-
-    push dword [float_const_0]
-    push dword [float_const_0]
-    push dword 0xFFFFFFFF
-    push dword [float_const_0]
-    push dword [float_const_0]
-    push dword [vertexArray]
-    call sfVertexArray_append
-    add  esp, 24
-
-    push dword [float_const_100]
-    push dword [float_const_0]
-    push dword 0xFFFFFFFF
-    push dword [float_const_100]
-    push dword [float_const_0]
-    push dword [vertexArray]
-    call sfVertexArray_append
-    add  esp, 24
-
-    push dword [float_const_100]
-    push dword [float_const_100]
-    push dword 0xFFFFFFFF
-    push dword [float_const_100]
-    push dword [float_const_100]
-    push dword [vertexArray]
-    call sfVertexArray_append
-    add  esp, 24
-
-    push dword [float_const_0]
-    push dword [float_const_100]
-    push dword 0xFFFFFFFF
-    push dword [float_const_0]
-    push dword [float_const_100]
-    push dword [vertexArray]
-    call sfVertexArray_append
-    add  esp, 24
 
 main_loop:
     push dword [window] ;end if window close
@@ -270,11 +221,11 @@ main_loop:
     fadd qword [total_time] ;add the delta time to total times
     fstp qword [total_time]
 
-    push dword [total_time + 4] ; print the time
-    push dword [total_time]
-    push float_patern
-    call printf
-    add  esp, 12
+;    push dword [total_time + 4] ; print the time
+;    push dword [total_time]
+;    push float_patern
+;    call printf
+;    add  esp, 12
 
     xor edx, edx
     perso_array_update_loop:
@@ -326,11 +277,10 @@ main_loop:
         jmp perso_array_draw_loop
     perso_array_draw_loop_end:
 
-    push dword renderState
-    push dword [vertexArray]
     push dword [window]
-    call sfRenderWindow_drawVertexArray
-    add  esp, 12
+    push dword map
+    call Map_draw
+    add  esp, 8
 
     push dword [window]
     call sfRenderWindow_display
@@ -346,14 +296,6 @@ main_end:
 
 
 handle_key_event:
-
-    ;we already know it's in the good format so we just push it
-;    push dword [float_test1]
-;    push dword [float_test2]
-;    push dword [perso + Perso.sprite]
-;    call sfSprite_move
-;    add  esp, 12
-
     cmp dword [event + sfKeyEvent.keyCode], KEY_Left
     jz  case_key_left
     cmp dword [event + sfKeyEvent.keyCode], KEY_Right
@@ -362,6 +304,9 @@ handle_key_event:
     jz  case_key_up
     cmp dword [event + sfKeyEvent.keyCode], KEY_Down
     jz  case_key_down
+
+    cmp dword [event + sfKeyEvent.keyCode], KEY_Esc
+    jz  case_key_esc
 
     jmp handle_key_event_end
 
@@ -388,9 +333,10 @@ case_key_down:
     call printf
     add  esp, 4
     jmp case_key_move_end
-
-
 case_key_move_end:
+
+case_key_esc:
+    jmp main_end
 
 
 handle_key_event_end:

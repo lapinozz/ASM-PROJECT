@@ -32,10 +32,13 @@ sfTrianglesFan    equ 5
 sfQuads           equ 6
 
 ;Keys
+KEY_Esc   equ 36
+
 KEY_Left  equ 71
 KEY_Right equ 72
 KEY_Up    equ 73
 KEY_Down  equ 74
+
 
 sfEvtClosed equ 0
 
