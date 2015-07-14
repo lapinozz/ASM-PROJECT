@@ -7,6 +7,7 @@ SECTION .data
     msg db 'testing', 10, 0
 
     perso_texture_file db './res/img/perso.png', 0
+    map_texture_file   db './res/img/map.png'  , 0
 
     int_patern   db '%i', 10, 0
     float_patern db '%f', 10, 0
@@ -43,6 +44,13 @@ SECTION .bss
     perso_array resb Array.size
 
     event resb sfEvent.size
+
+    vertexArray resd 1
+    vertex      resb sfVertex.size
+
+    mapTexture  resd 1
+
+    renderState resb sfRenderStates.size
 
 SECTION .text
 
@@ -148,6 +156,77 @@ main:
     call printf
     add  esp, 12
 
+    push 0x0 ;rect pointer
+    push dword map_texture_file
+    call sfTexture_createFromFile
+    add esp, 8
+    mov [mapTexture], eax
+
+    call sfVertexArray_create
+    mov  [vertexArray], eax
+
+    EXTERN sfTransform_Identity
+    mov eax, [sfTransform_Identity]
+    push eax
+    call [print_dword_float + 4]
+    add  esp, 8
+    jmp main_end
+
+    mov [renderState + sfRenderStates.transform + sfTransform.m11], dword 1
+    mov [renderState + sfRenderStates.transform + sfTransform.m12], dword 0
+    mov [renderState + sfRenderStates.transform + sfTransform.m13], dword 0
+    mov [renderState + sfRenderStates.transform + sfTransform.m21], dword 0
+    mov [renderState + sfRenderStates.transform + sfTransform.m22], dword 1
+    mov [renderState + sfRenderStates.transform + sfTransform.m23], dword 0
+    mov [renderState + sfRenderStates.transform + sfTransform.m31], dword 0
+    mov [renderState + sfRenderStates.transform + sfTransform.m32], dword 0
+    mov [renderState + sfRenderStates.transform + sfTransform.m33], dword 1
+
+    mov [renderState + sfRenderStates.blendMode], dword 3
+    mov [renderState + sfRenderStates.texture],  dword 0x0
+    mov [renderState + sfRenderStates.shader],  dword 0x0
+
+    push sfQuads
+    push dword [vertexArray]
+    call sfVertexArray_setPrimitiveType
+    add  esp, 8
+
+    push dword [float_const_0]
+    push dword [float_const_0]
+    push dword 0xFFFFFFFF
+    push dword [float_const_0]
+    push dword [float_const_0]
+    push dword [vertexArray]
+    call sfVertexArray_append
+    add  esp, 8
+
+    push dword [float_const_100]
+    push dword [float_const_0]
+    push dword 0xFFFFFFFF
+    push dword [float_const_100]
+    push dword [float_const_0]
+    push dword [vertexArray]
+    call sfVertexArray_append
+    add  esp, 8
+
+    push dword [float_const_100]
+    push dword [float_const_100]
+    push dword 0xFFFFFFFF
+    push dword [float_const_100]
+    push dword [float_const_100]
+    push dword [vertexArray]
+    call sfVertexArray_append
+    add  esp, 8
+
+    push dword [float_const_0]
+    push dword [float_const_100]
+    push dword 0xFFFFFFFF
+    push dword [float_const_0]
+    push dword [float_const_100]
+    push dword [vertexArray]
+    call sfVertexArray_append
+    add  esp, 8
+
 main_loop:
     push dword [window] ;end if window close
     call sfRenderWindow_isOpen
@@ -209,10 +288,10 @@ main_loop:
     perso_array_update_loop_end:
 
 ;    push word 0xFF ;a
-;    push word 0xFF ;g
 ;    push word 0xFF ;b
+;    push word 0xFF ;g
 ;    push word 0xFF ;r
-    push dword 0xFF000000 ; agbr black
+    push dword 0xFF000000 ; abgr black
     push dword [window]
     call sfRenderWindow_clear
     add  esp, 8
@@ -238,6 +317,12 @@ main_loop:
         jmp perso_array_draw_loop
     perso_array_draw_loop_end:
 
+    push dword renderState
+    push dword [vertexArray]
+    push dword [window]
+    call sfRenderWindow_drawVertexArray
+    add  esp, 12
+
     push dword [window]
     call sfRenderWindow_display
     add  esp, 4
@@ -252,13 +337,6 @@ main_end:
 
 
 handle_key_event:
-
-    ;pass float argument with conversion so we are sure it's in the good format
-;    sub  esp, 8		        ; make room for the float
-;	fld dword [float_test1]	; load our float onto the floating point stack
-;	fstp dword [esp + 4]	; push our float onto the stack
-;	fld  dword [float_test2]; load our float onto the floating point stack
-;	fstp dword [esp]		; push our float onto the stack
 
     ;we already know it's in the good format so we just push it
 ;    push dword [float_test1]
