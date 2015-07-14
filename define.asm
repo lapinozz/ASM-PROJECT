@@ -6,6 +6,7 @@ BITS 32
 %include "Perso.asm"
 %include "Game.asm"
 %include "Array.asm"
+%include "Map.asm"
 
 ;standard function
 EXTERN printf

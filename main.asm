@@ -29,6 +29,7 @@ SECTION .data
     float_result dq 1.44
 
     float_const_0 dd 0.0
+    float_const_1 dd 1.0
     float_const_2 dd 2.0
     float_const_3 dd 3.0
     float_const_4 dd 4.0
@@ -47,6 +48,8 @@ SECTION .bss
 
     vertexArray resd 1
     vertex      resb sfVertex.size
+
+    map         resb Map.size
 
     mapTexture  resd 1
 
@@ -79,6 +82,14 @@ main:
 
     call sfClock_create
     mov dword [delta_clock], dword eax
+
+    push 10 ;mapSize.x
+    push 10 ;mapSize.y
+    push 10 ;caseSize.x
+    push 10 ;caseSize.y
+    push map
+    call Map_init
+    add esp, 20
 
     push dword 0x1 ;isPointer
     push dword 100 ;count
@@ -165,26 +176,24 @@ main:
     call sfVertexArray_create
     mov  [vertexArray], eax
 
-    EXTERN sfTransform_Identity
-    mov eax, [sfTransform_Identity]
-    push eax
-    call [print_dword_float + 4]
-    add  esp, 8
-    jmp main_end
+    mov eax, [float_const_0]
+    mov ebx, [float_const_1]
 
-    mov [renderState + sfRenderStates.transform + sfTransform.m11], dword 1
-    mov [renderState + sfRenderStates.transform + sfTransform.m12], dword 0
-    mov [renderState + sfRenderStates.transform + sfTransform.m13], dword 0
-    mov [renderState + sfRenderStates.transform + sfTransform.m21], dword 0
-    mov [renderState + sfRenderStates.transform + sfTransform.m22], dword 1
-    mov [renderState + sfRenderStates.transform + sfTransform.m23], dword 0
-    mov [renderState + sfRenderStates.transform + sfTransform.m31], dword 0
-    mov [renderState + sfRenderStates.transform + sfTransform.m32], dword 0
-    mov [renderState + sfRenderStates.transform + sfTransform.m33], dword 1
+    mov [renderState + sfRenderStates.transform + sfTransform.m11], ebx
+    mov [renderState + sfRenderStates.transform + sfTransform.m12], eax
+    mov [renderState + sfRenderStates.transform + sfTransform.m13], eax
+    mov [renderState + sfRenderStates.transform + sfTransform.m21], eax
+    mov [renderState + sfRenderStates.transform + sfTransform.m22], ebx
+    mov [renderState + sfRenderStates.transform + sfTransform.m23], eax
+    mov [renderState + sfRenderStates.transform + sfTransform.m31], eax
+    mov [renderState + sfRenderStates.transform + sfTransform.m32], eax
+    mov [renderState + sfRenderStates.transform + sfTransform.m33], ebx
 
     mov [renderState + sfRenderStates.blendMode], dword 3
-    mov [renderState + sfRenderStates.texture],  dword 0x0
     mov [renderState + sfRenderStates.shader],  dword 0x0
+
+    mov eax,  dword [mapTexture]
+    mov [renderState + sfRenderStates.texture],  eax
 
     push sfQuads
     push dword [vertexArray]
@@ -198,7 +207,7 @@ main:
     push dword [float_const_0]
     push dword [vertexArray]
     call sfVertexArray_append
-    add  esp, 8
+    add  esp, 24
 
     push dword [float_const_100]
     push dword [float_const_0]
@@ -207,7 +216,7 @@ main:
     push dword [float_const_0]
     push dword [vertexArray]
     call sfVertexArray_append
-    add  esp, 8
+    add  esp, 24
 
     push dword [float_const_100]
     push dword [float_const_100]
@@ -216,7 +225,7 @@ main:
     push dword [float_const_100]
     push dword [vertexArray]
     call sfVertexArray_append
-    add  esp, 8
+    add  esp, 24
 
     push dword [float_const_0]
     push dword [float_const_100]
@@ -225,7 +234,7 @@ main:
     push dword [float_const_100]
     push dword [vertexArray]
     call sfVertexArray_append
-    add  esp, 8
+    add  esp, 24
 
 main_loop:
     push dword [window] ;end if window close
