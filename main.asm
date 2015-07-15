@@ -28,13 +28,19 @@ SECTION .data
     float_test2 dd 1.44
     float_result dq 1.44
 
+    float_const_n100 dd -100.0
     float_const_0 dd 0.0
     float_const_1 dd 1.0
     float_const_2 dd 2.0
     float_const_3 dd 3.0
     float_const_4 dd 4.0
     float_const_10 dd 10.0
+    float_const_30 dd 30.0
+    float_const_50 dd 50.0
     float_const_100 dd 100.0
+    float_const_150 dd 150.0
+    float_const_300 dd 300.0
+    float_const_500 dd 500.0
 
 SECTION .bss
     window resd 1
@@ -81,14 +87,6 @@ main:
     call sfClock_create
     mov dword [delta_clock], dword eax
 
-    push 10 ;mapSize.x
-    push 10 ;mapSize.y
-    push 10 ;caseSize.x
-    push 10 ;caseSize.y
-    push map
-    call Map_init
-    add esp, 20
-
     push dword 0x1 ;isPointer
     push dword 100 ;count
     push dword 4 ;dataSize
@@ -111,7 +109,7 @@ main:
         push eax
 
         push dword [float_const_100]
-        push dword [float_const_2]
+        push dword [float_const_n100]
         call rand_float_min_max
         add  esp, 8
 
@@ -122,7 +120,7 @@ main:
         push edx
 
         push dword [float_const_100]
-        push dword [float_const_2]
+        push dword [float_const_n100]
         call rand_float_min_max
         add  esp, 8
 
@@ -168,9 +166,21 @@ main:
     add esp, 8
     mov [mapTexture], eax
 
+    push 4 ;sheetSize.x
+    push 4 ;sheetSize.x
+    push dword [float_const_100] ;tileSize.x
+    push dword [float_const_100] ;tileSize.y
+    push dword [mapTexture]
+    push 5 ;mapSize.y
+    push 5 ;mapSize.x
+    push dword [float_const_100] ;caseSize.y
+    push dword [float_const_100] ;caseSize.x
+    push map
+    call Map_init
+    add esp, 20
+
     mov eax, [float_const_0]
     mov ebx, [float_const_1]
-
     mov [renderState + sfRenderStates.transform + sfTransform.m11], ebx
     mov [renderState + sfRenderStates.transform + sfTransform.m12], eax
     mov [renderState + sfRenderStates.transform + sfTransform.m13], eax
@@ -183,9 +193,6 @@ main:
 
     mov [renderState + sfRenderStates.blendMode], dword 3
     mov [renderState + sfRenderStates.shader],  dword 0x0
-
-    mov eax,  dword [mapTexture]
-    mov [renderState + sfRenderStates.texture],  eax
 
 main_loop:
     push dword [window] ;end if window close

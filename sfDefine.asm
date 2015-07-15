@@ -3,6 +3,8 @@ EXTERN sfRenderWindow_create
 EXTERN sfRenderWindow_isOpen
 EXTERN sfRenderWindow_clear
 EXTERN sfRenderWindow_display
+EXTERN sfRenderWindow_setView
+EXTERN sfRenderWindow_getDefaultView
 EXTERN sfRenderWindow_pollEvent
 EXTERN sfRenderWindow_drawSprite
 EXTERN sfRenderWindow_drawVertexArray
