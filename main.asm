@@ -44,6 +44,7 @@ SECTION .data
 
 SECTION .bss
     window resd 1
+    view   resd 1
 
     delta_clock resd 1
     delta_time resq 1
@@ -82,7 +83,11 @@ main:
     push 0x320          ;videomode width
     call sfRenderWindow_create
     add  esp, 24
-    mov dword [window], dword eax  ;save the window addresses
+    mov [window], eax  ;save the window addresses
+
+    push eax
+    call sfRenderWindow_getDefaultView
+    mov  [view], eax
 
     call sfClock_create
     mov dword [delta_clock], dword eax
