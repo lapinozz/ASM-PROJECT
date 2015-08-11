@@ -26,7 +26,7 @@ Array_init:
     imul  ecx, ebx ; count * dataSize
     push ecx
     call malloc
-    add  esp, 4
+    add  esp, 8
     mov  ebx, [ebp + 8]
     mov [ebx + Array.start], eax
 
@@ -50,6 +50,33 @@ Array_resize:
     add  esp, 8
 
 Array_resize_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
+;void Array_insert(Array*, int value)
+Array_insert:
+    push ebp
+    mov  ebp, esp
+
+    mov ebx, [ebp + 8]
+    mov eax, [ebx + Array.count]
+    inc eax
+
+    push eax
+    push dword [ebp + 8]
+    call Array_resize
+    add  esp, 8
+
+    mov  ebx, [ebp + 8]
+    mov  edx, [ebp + 12]
+    mov  ecx, [ebx + Array.start]
+    mov  eax, [ebx + Array.count]
+    imul  eax, [ebx + Array.dataSize]
+
+    mov  [ecx + eax], edx
+
+Array_insert_end:
     mov esp, ebp
     pop ebp
     ret

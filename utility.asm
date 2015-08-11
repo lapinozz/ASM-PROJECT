@@ -120,6 +120,147 @@ rand_float_min_max_end:
     pop ebp
     ret
 
+;(dword)float lerp_f(float value1, float value2, float interpolation)
+lerp_f:
+    push ebp
+    mov  ebp, esp
+
+    ;(value1 * (1.0f - interpolation)) + (value2 * interpolation);
+    fld  dword [float_const_1]
+    fsub dword [ebp + 16] ;interpolation
+    fmul dword [ebp + 8]  ;value1
+
+    fld  dword [ebp + 12] ;value2
+    fmul dword [ebp + 16] ;interpolation
+
+    fadd st1
+
+    fstp dword [ebp + 8]
+    mov  eax, [ebp + 8]
+
+lerp_f_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
+;(dword)float lerp_i(int value1, int value2, float interpolation)
+lerp_i:
+    push ebp
+    mov  ebp, esp
+
+    push dword [ebp + 16] ;interpolation
+    sub  esp, 8
+    fild dword [ebp + 12] ;value2
+    fstp dword [esp + 4]
+    fild dword [ebp + 8] ;value1
+    fstp dword [esp]
+
+    call lerp_f
+    add  esp, 12
+
+lerp_i_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
+;char* read_file(char* filepath)
+read_file:
+    push ebp
+    mov  ebp, esp
+    sub  esp, 8
+
+    push file_mode_rb
+    push dword [ebp + 8]
+    call fopen
+    add  esp, 8
+    mov  [ebp - 4], eax
+
+    push SEEK_END
+    push 0x0
+    push dword [ebp - 4]
+    call fseek
+    add  esp, 12
+
+    push dword [ebp - 4]
+    call ftell
+    add  esp, 4
+
+    push eax
+
+    inc  eax
+    push eax
+    call malloc
+    add  esp, 4
+    mov  [ebp - 8], eax
+
+    push SEEK_SET
+    push 0x0
+    push dword [ebp - 4]
+    call fseek
+    add  esp, 12
+
+    mov  eax, dword [esp]
+
+    push dword [ebp - 4]
+    push dword 1
+    push eax
+    push dword [ebp - 8]
+    call fread
+    add  esp, 16
+
+    mov  edx, dword [esp]
+    dec  edx
+    mov  eax, [ebp - 8]
+    mov  dword [eax + edx], 0
+
+read_file_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
+;void get_mouse_position(Vector2f* returnAddr, sfRenderWindow*, sfView*)
+get_mouse_position:
+    push ebp
+    mov  ebp, esp
+
+    sub esp, 8
+    mov eax, esp
+    push dword [ebp + 12]
+    push eax
+    call sfMouse_getPositionRenderWindow
+    add  esp, 4
+
+    pop  eax
+    pop  ebx
+
+    sub  esp, 8
+    mov  edx, esp
+
+    push dword [ebp + 16]
+    push ebx
+    push eax
+    push dword [ebp + 12]
+    push edx
+    call sfRenderWindow_mapPixelToCoords
+    add  esp, 16
+
+;    fld dword [esp]     since we return float no need to do conversion
+;    fistp dword [esp]
+;    fld dword [esp + 4]
+;    fistp dword [esp + 4]
+
+    pop eax
+    pop edx
+
+    mov ebx, [ebp + 8]
+    mov [ebx + Vector2.x], eax
+    mov [ebx + Vector2.y], edx
+
+get_mouse_position_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
 
 ;function patern
 
@@ -148,3 +289,7 @@ rand_float_min_max_end:
 ;mov ebx, 100 ;dividend
 ;div ebx      ;divide
 ;             ;quotient in EAX and remainder in EDX
+
+
+;GLOBAL breakpoint
+;breakpoint:

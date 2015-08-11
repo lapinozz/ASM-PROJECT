@@ -8,9 +8,26 @@ SECTION .data
 
     perso_texture_file db './res/img/perso.png', 0
     map_texture_file   db './res/img/map.png'  , 0
+    font_file          db './res/font/default_font.ttf' , 0
+    maptileset_texture_file   db './res/img/tileset.png', 0
+
+    text_left  db 'left' , 10, 0
+    text_right db 'right', 10, 0
+
+    line_return       db 10, 0
+    comma_char        db ',', 0
+    point_char        db '.', 0
+    double_point_char db ':', 0
+
+    char_1 db '1', 0
+
+    map_file   db './res/map/map.txt', 0
+
+    file_mode_rb db 'rb', 0
 
     int_patern   db '%i', 10, 0
     float_patern db '%f', 10, 0
+    char_patern db '%c', 10, 0
     long_long_patern db "%lld", 10, 0
 
     delta_time_partern db 'Delta Time %i', 10, 0
@@ -29,14 +46,23 @@ SECTION .data
     float_result dq 1.44
 
     float_const_n100 dd -100.0
+    float_const_n10 dd -10.0
     float_const_0 dd 0.0
+    float_const_0_1 dd 0.1
+    float_const_0_45 dd 0.45
+    float_const_0_5 dd 0.5
+    float_const_0_9 dd 0.9
+    float_const_0_99 dd 0.99
     float_const_1 dd 1.0
+    float_const_1_1 dd 1.1
     float_const_2 dd 2.0
     float_const_3 dd 3.0
     float_const_4 dd 4.0
     float_const_10 dd 10.0
+    float_const_16 dd 16.0
     float_const_30 dd 30.0
     float_const_50 dd 50.0
+    float_const_64 dd 64.0
     float_const_100 dd 100.0
     float_const_150 dd 150.0
     float_const_300 dd 300.0
@@ -44,7 +70,7 @@ SECTION .data
 
 SECTION .bss
     window resd 1
-    view   resd 1
+    viewManager resb ViewManager.size
 
     delta_clock resd 1
     delta_time resq 1
@@ -54,9 +80,14 @@ SECTION .bss
 
     event resb sfEvent.size
 
-    map         resb Map.size
+;    map         resb Map.size
+    circuit     resb Circuit.size
+
+    cellMode    resd 1
 
     mapTexture  resd 1
+
+    font        resd 1
 
     renderState resb sfRenderStates.size
 
@@ -75,6 +106,11 @@ main:
     call srand
     add  esp, 4
 
+    push font_file
+    call sfFont_createFromFile
+    add  esp, 4
+    mov  [font], eax
+
     push 0x0            ;context setting pointer
     push 0111b          ;window style (titlebar + resize + close)
     push window_title   ;window title
@@ -85,9 +121,13 @@ main:
     add  esp, 24
     mov [window], eax  ;save the window addresses
 
-    push eax
-    call sfRenderWindow_getDefaultView
-    mov  [view], eax
+    push dword [float_const_0_9]
+    push dword [float_const_100]
+    push dword [float_const_100]
+    push dword [window]
+    push dword viewManager
+    call ViewManager_init
+    add  esp, 20
 
     call sfClock_create
     mov dword [delta_clock], dword eax
@@ -165,24 +205,62 @@ main:
     call printf
     add  esp, 12
 
+    push dword [float_const_0_45] ;interpolation
+    push dword 100   ;value2
+    push dword 0     ;value1
+    call lerp_i
+    add  esp, 12
+
+    push eax
+    call print_dword_float
+    add  esp, 4
+
+    push map_file
+    call read_file
+    add  esp, 4
+
     push 0x0 ;rect pointer
-    push dword map_texture_file
+    push dword maptileset_texture_file
     call sfTexture_createFromFile
     add esp, 8
     mov [mapTexture], eax
 
-    push 4 ;sheetSize.x
-    push 4 ;sheetSize.x
-    push dword [float_const_100] ;tileSize.x
-    push dword [float_const_100] ;tileSize.y
-    push dword [mapTexture]
-    push 5 ;mapSize.y
-    push 5 ;mapSize.x
+;    push map_file
+;    push map
+;    call Map_init_from_file
+;    add  esp, 8
+
+;    push 4 ;sheetSize.x
+;    push 4 ;sheetSize.x
+;    push dword [float_const_16] ;tileSize.x
+;    push dword [float_const_16] ;tileSize.y
+;    push dword [mapTexture]
+;    push 5 ;mapSize.y
+;    push 5 ;mapSize.x
+;    push dword [float_const_100] ;caseSize.y
+;    push dword [float_const_100] ;caseSize.x
+;    push map
+;    call Map_init
+;    add esp, 20
+
+    mov  dword [cellMode], CELL_NONE
+
+    push dword [float_const_0_5]
+    push 100 ;mapSize.y
+    push 100 ;mapSize.x
     push dword [float_const_100] ;caseSize.y
     push dword [float_const_100] ;caseSize.x
-    push map
-    call Map_init
+    push circuit
+    call Circuit_init
     add esp, 20
+
+    push circuit
+    push dword 0x0
+    push dword 4; y
+    push dword 4; x
+    push dword COMPONENT_AND; type
+    call Component_create
+    add  esp, 20
 
     mov eax, [float_const_0]
     mov ebx, [float_const_1]
@@ -206,6 +284,17 @@ main_loop:
     cmp eax, 0
     jz main_end
 
+    push dword [delta_clock]
+    push dword delta_time       ;long long pointer
+    call sfClock_restart
+    add  esp, 4
+
+    fld  dword [microsecond_to_second] ;convert the time to second
+    fimul dword [delta_time]
+    fst qword [delta_time]
+    fadd qword [total_time] ;add the delta time to total times
+    fstp qword [total_time]
+
     pollevent_loop:
         push dword event
         push dword [window]
@@ -218,20 +307,13 @@ main_loop:
         jz   main_end
         cmp  dword [event + sfEvent.type], sfEvtKeyPressed
         jz   handle_key_event
+        cmp  dword [event + sfEvent.type], sfEvtMouseButtonPressed
+        jz   handle_mouse_event
+        cmp  dword [event + sfEvent.type], sfEvtMouseWheelMoved
+        jz   handle_wheel_event
 
         jmp  pollevent_loop
     pollevent_end:
-
-    push dword [delta_clock]
-    push dword delta_time       ;long long pointer
-    call sfClock_restart
-    add  esp, 4
-
-    fld  dword [microsecond_to_second] ;convert the time to second
-    fimul dword [delta_time]
-    fst qword [delta_time]
-    fadd qword [total_time] ;add the delta time to total times
-    fstp qword [total_time]
 
 ;    push dword [total_time + 4] ; print the time
 ;    push dword [total_time]
@@ -259,10 +341,14 @@ main_loop:
         jmp perso_array_update_loop
     perso_array_update_loop_end:
 
-;    push word 0xFF ;a
-;    push word 0xFF ;b
-;    push word 0xFF ;g
-;    push word 0xFF ;r
+    push viewManager
+    call ViewManager_update
+    add  esp, 4
+
+    push circuit
+    call Circuit_update
+    add  esp, 4
+
     push dword 0xFF000000 ; abgr black
     push dword [window]
     call sfRenderWindow_clear
@@ -290,8 +376,8 @@ main_loop:
     perso_array_draw_loop_end:
 
     push dword [window]
-    push dword map
-    call Map_draw
+    push dword circuit
+    call Circuit_draw
     add  esp, 8
 
     push dword [window]
@@ -309,48 +395,141 @@ main_end:
 
 handle_key_event:
     cmp dword [event + sfKeyEvent.keyCode], KEY_Left
-    jz  case_key_left
+    jz  .case_key_left
     cmp dword [event + sfKeyEvent.keyCode], KEY_Right
-    jz  case_key_right
+    jz  .case_key_right
     cmp dword [event + sfKeyEvent.keyCode], KEY_Up
-    jz  case_key_up
+    jz  .case_key_up
     cmp dword [event + sfKeyEvent.keyCode], KEY_Down
-    jz  case_key_down
+    jz  .case_key_down
 
     cmp dword [event + sfKeyEvent.keyCode], KEY_Esc
-    jz  case_key_esc
+    jz  .case_key_esc
+
+    cmp dword [event + sfKeyEvent.keyCode], KEY_A
+    jz  .case_key_a
+    cmp dword [event + sfKeyEvent.keyCode], KEY_S
+    jz  .case_key_s
+    cmp dword [event + sfKeyEvent.keyCode], KEY_D
+    jz  .case_key_d
+    cmp dword [event + sfKeyEvent.keyCode], KEY_1
+    jz  .case_key_a
+    cmp dword [event + sfKeyEvent.keyCode], KEY_2
+    jz  .case_key_s
+    cmp dword [event + sfKeyEvent.keyCode], KEY_3
+    jz  .case_key_d
 
     jmp handle_key_event_end
 
-case_key_left:
-    push dword msg_left
-    call printf
-    add  esp, 4
-    jmp case_key_move_end
+.case_key_left:
+    fld  dword [float_const_n100]
+    fadd dword [viewManager + ViewManager.targetCoord + Vector2.x]
+    fstp dword [viewManager + ViewManager.targetCoord + Vector2.x]
+    jmp .case_key_move_end
 
-case_key_right:
-    push dword msg_right
-    call printf
-    add  esp, 4
-    jmp case_key_move_end
+.case_key_right:
+    fld  dword [float_const_100]
+    fadd dword [viewManager + ViewManager.targetCoord + Vector2.x]
+    fstp dword [viewManager + ViewManager.targetCoord + Vector2.x]
+    jmp .case_key_move_end
 
-case_key_up:
-    push dword msg_up
-    call printf
-    add  esp, 4
-    jmp case_key_move_end
+.case_key_up:
+    fld  dword [float_const_n100]
+    fadd dword [viewManager + ViewManager.targetCoord + Vector2.y]
+    fstp dword [viewManager + ViewManager.targetCoord + Vector2.y]
+    jmp .case_key_move_end
 
-case_key_down:
-    push dword msg_down
-    call printf
-    add  esp, 4
-    jmp case_key_move_end
-case_key_move_end:
+.case_key_down:
+    fld  dword [float_const_100]
+    fadd dword [viewManager + ViewManager.targetCoord + Vector2.y]
+    fstp dword [viewManager + ViewManager.targetCoord + Vector2.y]
+    jmp .case_key_move_end
 
-case_key_esc:
+.case_key_move_end:
+    jmp handle_key_event_end
+
+
+.case_key_esc:
     jmp main_end
 
+.case_key_a:
+    mov  dword [cellMode], CELL_NONE
+    jmp handle_key_event_end
+
+.case_key_s:
+    mov  dword [cellMode], CELL_OFF
+    jmp handle_key_event_end
+
+.case_key_d:
+    mov  dword [cellMode], CELL_ACTIVE
+    jmp handle_key_event_end
 
 handle_key_event_end:
     jmp pollevent_loop
 
+
+
+handle_mouse_event:
+
+    cmp dword [event + sfMouseButtonEvent.button], sfMouseLeft
+    jz  .left_button
+    cmp dword [event + sfMouseButtonEvent.button], sfMouseRight
+    jz  .right_button
+
+    .left_button:
+        sub esp, 8
+        mov eax, esp
+
+        push dword [viewManager + ViewManager.view]
+        push dword [window]
+        push eax
+        call get_mouse_position
+        add  esp, 12
+
+        ;x and y are already pushed
+        push esp ;the place x and y are using will be used
+        push circuit
+        call Circuit_convertWorldToCellCoord
+        add  esp, 8
+
+        pop eax
+        pop edx
+
+        push dword [cellMode]
+        push eax
+        push edx
+        push circuit
+        call Circuit_setCellType
+        add  esp, 16
+        jmp handle_mouse_event_end
+
+    .right_button:
+        push text_right
+        call printf
+        add  esp, 4
+        jmp handle_mouse_event_end
+
+handle_mouse_event_end:
+    jmp pollevent_loop
+
+handle_wheel_event:
+
+    fld dword [float_const_0]
+    fld dword [event + sfMouseWheelEvent.delta]
+    fucomip ST1 ;do something like comparing ST1 and ST0 then pop
+    fstp ST0   ;pop
+    jbe .greater ;jmp if greater (or less (or whatever i dont remember))
+    push dword [float_const_0_9]
+    jmp .zoom
+
+    .greater:
+    push dword [float_const_1_1]
+
+    .zoom:
+    push viewManager
+    call ViewManager_zoomAtMouse
+    add  esp, 8
+    jmp handle_wheel_event_end
+
+handle_wheel_event_end:
+    jmp pollevent_loop
