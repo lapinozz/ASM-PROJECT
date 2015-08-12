@@ -106,4 +106,85 @@ Component_update:
 Component_update_end:
     mov esp, ebp
     pop ebp
+    ret;    push map_file
+;    call read_file
+;    add  esp, 4
+
+
+;void Component_draw(Component*, sfRenderWindow*)
+Component_draw:
+    push ebp
+    mov  ebp, esp
+    sub  esp, 8
+
+    mov  ebx, [ebp + 8]
+    mov  eax, [ebx + Component.type]
+
+    cmp eax, COMPONENT_AND
+    jz  .case_and
+
+
+    jmp Component_draw_end
+
+    .case_and:
+        ;arg #1 = x offset #2 = y offset
+        %macro  component_move_sprite_and_draw 2
+            mov  eax, [ebx + Component.circuit]
+            fild  dword [ebx + Component.pos + Vector2.x]
+            fiadd dword %1
+            fmul dword [eax + Circuit.caseSize + Vector2.x]
+            fild  dword [ebx + Component.pos + Vector2.y]
+            fiadd dword %2
+            fmul dword [eax + Circuit.caseSize + Vector2.y]
+
+            sub   esp, 8
+            fstp dword [esp + 4]
+            fstp dword [esp]
+            push dword [publicSprite]
+            call sfSprite_setPosition
+            add  esp, 12
+
+            push dword 0x0
+            push dword [publicSprite]
+            push dword [window]
+            call sfRenderWindow_drawSprite
+            add  esp, 8
+        %endmacro
+
+        ;arg #1 = texture
+        %macro  component_set_sprite_texture 1
+            push dword %1
+            push dword [publicSprite]
+            call sfSprite_setTexture
+            add  esp, 8
+        %endmacro
+
+        component_set_sprite_texture [inputTexture]
+        component_move_sprite_and_draw [int_const_0], [int_const_0]
+        component_move_sprite_and_draw [int_const_0], [int_const_2]
+
+
+        component_set_sprite_texture [outputTexture]
+        component_move_sprite_and_draw [int_const_2], [int_const_1]
+
+        component_set_sprite_texture [downLeftTexture]
+        component_move_sprite_and_draw [int_const_1], [int_const_0]
+
+        component_set_sprite_texture [topLeftTexture]
+        component_move_sprite_and_draw [int_const_1], [int_const_2]
+
+        component_set_sprite_texture [topLeftTexture]
+        component_move_sprite_and_draw [int_const_1], [int_const_2]
+
+        component_set_sprite_texture [componentAndTexture]
+        component_move_sprite_and_draw [int_const_1], [int_const_1]
+
+
+        jmp .end_case
+
+    .end_case:
+
+Component_draw_end:
+    mov esp, ebp
+    pop ebp
     ret

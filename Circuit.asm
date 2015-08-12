@@ -179,7 +179,7 @@ Circuit_draw:
     sub  esp, 20
     push ebx
 
-    mov  ebx, [ebp + 8]
+    mov ebx, [ebp + 8]
 
     cmp [ebx + Circuit.currentCells], byte 0
     lea eax, [ebx + Circuit.cells1]
@@ -321,6 +321,34 @@ Circuit_draw:
     push dword [ebp + 12]
     call sfRenderWindow_drawVertexArray
     add  esp, 12
+
+    mov  ebx, [ebp + 8]
+
+    mov  eax, [ebx + Circuit.components + Array.start]
+
+    mov  edx, [ebx + Circuit.components + Array.count]
+    inc  edx
+    xor  ecx, ecx
+    .components_loop:
+        cmp edx, ecx
+        jz .components_loop_end
+
+        push eax
+        push edx
+        push ecx
+
+        push dword [ebp + 12]
+        push dword [eax + ecx*4]
+        call Component_draw
+        add  esp, 8
+
+        pop ecx
+        pop edx
+        pop eax
+
+        inc ecx
+        jmp .components_loop
+    .components_loop_end:
 
 Circuit_draw_end:
     pop ebx

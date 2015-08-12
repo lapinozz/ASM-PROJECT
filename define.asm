@@ -1,6 +1,7 @@
 BITS 32
 
 %include "sfDefine.asm"
+%include "Ressources.asm"
 %include "Vector2.asm"
 %include "utility.asm"
 %include "Perso.asm"

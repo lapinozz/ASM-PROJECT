@@ -23,6 +23,7 @@ EXTERN sfTexture_createFromFile
 
 EXTERN sfSprite_create
 EXTERN sfSprite_setTexture
+EXTERN sfSprite_setPosition
 EXTERN sfSprite_move
 
 EXTERN sfClock_create

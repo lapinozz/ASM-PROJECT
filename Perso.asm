@@ -2,7 +2,6 @@
 
 struc Perso
     .sprite resd 1
-    .texture resd 1
 
     .velocity resb Vector2.size
 
@@ -72,15 +71,8 @@ Perso_create:
     mov  ebx, [ebp - 4]
     mov dword [ebx + Perso.sprite], dword eax
 
-    push 0x0 ;rect pointer
-    push dword [ebp + 8] ; param 1
-    call sfTexture_createFromFile
-    add esp, 8
-    mov  ebx, [ebp - 4]
-    mov dword [ebx + Perso.texture], dword eax
-
     push 0x1 ;reset rect
-    push dword [ebx + Perso.texture]
+    push dword [perso_texture]
     push dword [ebx + Perso.sprite]
     call sfSprite_setTexture
     add  esp, 12

@@ -6,11 +6,6 @@ SECTION .data
 
     msg db 'testing', 10, 0
 
-    perso_texture_file db './res/img/perso.png', 0
-    map_texture_file   db './res/img/map.png'  , 0
-    font_file          db './res/font/default_font.ttf' , 0
-    maptileset_texture_file   db './res/img/tileset.png', 0
-
     text_left  db 'left' , 10, 0
     text_right db 'right', 10, 0
 
@@ -44,6 +39,16 @@ SECTION .data
     float_test1 dd 2.55
     float_test2 dd 1.44
     float_result dq 1.44
+
+    int_const_n4 dd -4
+    int_const_n3 dd -3
+    int_const_n2 dd -2
+    int_const_n1 dd -1
+    int_const_0  dd  0
+    int_const_1  dd  1
+    int_const_2  dd  2
+    int_const_3  dd  3
+    int_const_4  dd  4
 
     float_const_n100 dd -100.0
     float_const_n10 dd -10.0
@@ -85,11 +90,7 @@ SECTION .bss
 
     cellMode    resd 1
 
-    mapTexture  resd 1
-
-    font        resd 1
-
-    renderState resb sfRenderStates.size
+    publicSprite resd 1
 
 SECTION .text
 
@@ -106,10 +107,10 @@ main:
     call srand
     add  esp, 4
 
-    push font_file
-    call sfFont_createFromFile
-    add  esp, 4
-    mov  [font], eax
+    call load_resources
+
+    call sfSprite_create
+    mov  [publicSprite], eax
 
     push 0x0            ;context setting pointer
     push 0111b          ;window style (titlebar + resize + close)
@@ -191,10 +192,6 @@ main:
     mov  edx, [ebx]
     mov  [edx + Perso.velocity + Vector2.y], eax
 
-    push msg
-    call printf
-    add  esp, 4
-
     fld  dword [float_test1] ;do addition using FPU
     fadd dword [float_test2]
     fstp qword [float_result]
@@ -215,15 +212,9 @@ main:
     call print_dword_float
     add  esp, 4
 
-    push map_file
-    call read_file
-    add  esp, 4
-
-    push 0x0 ;rect pointer
-    push dword maptileset_texture_file
-    call sfTexture_createFromFile
-    add esp, 8
-    mov [mapTexture], eax
+;    push map_file
+;    call read_file
+;    add  esp, 4
 
 ;    push map_file
 ;    push map
@@ -261,21 +252,6 @@ main:
     push dword COMPONENT_AND; type
     call Component_create
     add  esp, 20
-
-    mov eax, [float_const_0]
-    mov ebx, [float_const_1]
-    mov [renderState + sfRenderStates.transform + sfTransform.m11], ebx
-    mov [renderState + sfRenderStates.transform + sfTransform.m12], eax
-    mov [renderState + sfRenderStates.transform + sfTransform.m13], eax
-    mov [renderState + sfRenderStates.transform + sfTransform.m21], eax
-    mov [renderState + sfRenderStates.transform + sfTransform.m22], ebx
-    mov [renderState + sfRenderStates.transform + sfTransform.m23], eax
-    mov [renderState + sfRenderStates.transform + sfTransform.m31], eax
-    mov [renderState + sfRenderStates.transform + sfTransform.m32], eax
-    mov [renderState + sfRenderStates.transform + sfTransform.m33], ebx
-
-    mov [renderState + sfRenderStates.blendMode], dword 3
-    mov [renderState + sfRenderStates.shader],  dword 0x0
 
 main_loop:
     push dword [window] ;end if window close
