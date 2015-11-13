@@ -13,13 +13,16 @@ SECTION .data
     top_right_texture_file           db './res/img/component_top_right.png', 0
     down_left_texture_file           db './res/img/component_down_left.png', 0
     down_right_texture_file          db './res/img/component_down_right.png', 0
-    top_left_right_texture_file      db './res/img/componnet_top_left_right.png', 0
+    top_left_right_texture_file      db './res/img/component_top_left_right.png', 0
     down_left_right_texture_file     db './res/img/component_down_left_right.png', 0
     top_down_left_texture_file       db './res/img/component_top_down_left.png', 0
     top_down_right_texture_file      db './res/img/component_top_down_right.png', 0
     top_down_left_right_texture_file db './res/img/component_top_down_left_right.png', 0
 
     component_and_texture_file db './res/img/component_and.png', 0
+    component_or_texture_file db './res/img/component_or.png', 0
+    component_xor_texture_file db './res/img/component_xor.png', 0
+    component_not_texture_file db './res/img/component_not.png', 0
 
 SECTION .bss
     perso_texture resd 1
@@ -45,18 +48,22 @@ SECTION .bss
     topDownLeftRightTexture resd 1
 
     componentAndTexture resd 1
+    componentOrTexture resd 1
+    componentXorTexture resd 1
+    componentNotTexture resd 1
 
 
 SECTION .text
 
-    ;arg #1 is texture path arg #2 is where to put it
-    %macro  loadTexture 2
-            push 0x0 ;rect pointer
-            push dword %1
-            call sfTexture_createFromFile
-            add esp, 8
-            mov [%2], eax
-    %endmacro
+;arg #1 is texture path arg #2 is where to put it
+%macro  loadTexture 2
+        push 0x0 ;rect pointer
+        push dword %1
+        call sfTexture_createFromFile
+        add esp, 8
+        mov [%2], eax
+%endmacro
+
 
 ;void load_resources
 load_resources:
@@ -94,6 +101,9 @@ load_resources:
     loadTexture top_down_left_right_texture_file, topDownLeftRightTexture
 
     loadTexture component_and_texture_file, componentAndTexture
+    loadTexture component_or_texture_file, componentOrTexture
+    loadTexture component_xor_texture_file, componentXorTexture
+    loadTexture component_not_texture_file, componentNotTexture
 
     mov eax, [float_const_0]
     mov ebx, [float_const_1]

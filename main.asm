@@ -53,6 +53,8 @@ SECTION .data
     float_const_n100 dd -100.0
     float_const_n10 dd -10.0
     float_const_0 dd 0.0
+    float_const_0_00001 dd 0.00001
+    float_const_0_001 dd 0.001
     float_const_0_1 dd 0.1
     float_const_0_45 dd 0.45
     float_const_0_5 dd 0.5
@@ -60,7 +62,9 @@ SECTION .data
     float_const_0_99 dd 0.99
     float_const_1 dd 1.0
     float_const_1_1 dd 1.1
+    float_const_1_5 dd 1.5
     float_const_2 dd 2.0
+    float_const_2_5 dd 2.5
     float_const_3 dd 3.0
     float_const_4 dd 4.0
     float_const_10 dd 10.0
@@ -72,6 +76,8 @@ SECTION .data
     float_const_150 dd 150.0
     float_const_300 dd 300.0
     float_const_500 dd 500.0
+    float_const_800 dd 800.0
+    float_const_1000 dd 1000.0
 
 SECTION .bss
     window resd 1
@@ -87,6 +93,9 @@ SECTION .bss
 
 ;    map         resb Map.size
     circuit     resb Circuit.size
+    drawCircuit resb Circuit.size
+
+    updateCircuit resb 1;
 
     cellMode    resd 1
 
@@ -236,7 +245,8 @@ main:
 
     mov  dword [cellMode], CELL_NONE
 
-    push dword [float_const_0_5]
+;    push dword [float_const_0_5]
+    push dword [float_const_0_00001]
     push 100 ;mapSize.y
     push 100 ;mapSize.x
     push dword [float_const_100] ;caseSize.y
@@ -245,13 +255,21 @@ main:
     call Circuit_init
     add esp, 20
 
-    push circuit
-    push dword 0x0
-    push dword 4; y
-    push dword 4; x
-    push dword COMPONENT_AND; type
-    call Component_create
-    add  esp, 20
+    mov byte [updateCircuit], 1
+
+;    push circuit
+;    push dword 0x0
+;    push dword 4; y
+;    push dword 4; x
+;    push dword COMPONENT_AND; type
+;    call Component_create
+;    add  esp, 20
+;
+;    push dword 0
+;    lea  eax, [circuit + Circuit.components]
+;    push eax
+;    call Array_remove ;im still shoked that this function work
+;    add  esp, 8
 
 main_loop:
     push dword [window] ;end if window close
@@ -321,9 +339,12 @@ main_loop:
     call ViewManager_update
     add  esp, 4
 
-    push circuit
-    call Circuit_update
-    add  esp, 4
+    cmp byte [updateCircuit], 0
+    jz .skip_circuit_update
+        push circuit
+        call Circuit_update
+        add  esp, 4
+    .skip_circuit_update:
 
     push dword 0xFF000000 ; abgr black
     push dword [window]
@@ -382,18 +403,41 @@ handle_key_event:
     cmp dword [event + sfKeyEvent.keyCode], KEY_Esc
     jz  .case_key_esc
 
+    cmp dword [event + sfKeyEvent.keyCode], KEY_Tab
+    jz  .case_key_tab
+
     cmp dword [event + sfKeyEvent.keyCode], KEY_A
     jz  .case_key_a
     cmp dword [event + sfKeyEvent.keyCode], KEY_S
     jz  .case_key_s
     cmp dword [event + sfKeyEvent.keyCode], KEY_D
     jz  .case_key_d
+    cmp dword [event + sfKeyEvent.keyCode], KEY_F
+    jz  .case_key_f
+    cmp dword [event + sfKeyEvent.keyCode], KEY_G
+    jz  .case_key_g
+    cmp dword [event + sfKeyEvent.keyCode], KEY_H
+    jz  .case_key_h
+    cmp dword [event + sfKeyEvent.keyCode], KEY_J
+    jz  .case_key_j
+    cmp dword [event + sfKeyEvent.keyCode], KEY_K
+    jz  .case_key_k
     cmp dword [event + sfKeyEvent.keyCode], KEY_1
     jz  .case_key_a
     cmp dword [event + sfKeyEvent.keyCode], KEY_2
     jz  .case_key_s
     cmp dword [event + sfKeyEvent.keyCode], KEY_3
     jz  .case_key_d
+    cmp dword [event + sfKeyEvent.keyCode], KEY_4
+    jz  .case_key_f
+    cmp dword [event + sfKeyEvent.keyCode], KEY_5
+    jz  .case_key_g
+    cmp dword [event + sfKeyEvent.keyCode], KEY_6
+    jz  .case_key_h
+    cmp dword [event + sfKeyEvent.keyCode], KEY_7
+    jz  .case_key_j
+    cmp dword [event + sfKeyEvent.keyCode], KEY_8
+    jz  .case_key_k
 
     jmp handle_key_event_end
 
@@ -424,29 +468,43 @@ handle_key_event:
 .case_key_move_end:
     jmp handle_key_event_end
 
-
 .case_key_esc:
     jmp main_end
+
+.case_key_tab:
+    xor [updateCircuit], byte 1
+    jmp handle_key_event_end
 
 .case_key_a:
     mov  dword [cellMode], CELL_NONE
     jmp handle_key_event_end
-
 .case_key_s:
     mov  dword [cellMode], CELL_OFF
     jmp handle_key_event_end
-
 .case_key_d:
     mov  dword [cellMode], CELL_ACTIVE
+    jmp handle_key_event_end
+.case_key_f:
+    mov  dword [cellMode], CELL_ON
+    jmp handle_key_event_end
+.case_key_g:
+    mov  dword [cellMode], CELL_TYPE5
+    jmp handle_key_event_end
+.case_key_h:
+    mov  dword [cellMode], CELL_TYPE6
+    jmp handle_key_event_end
+.case_key_j:
+    mov  dword [cellMode], CELL_TYPE7
+    jmp handle_key_event_end
+.case_key_k:
+    mov  dword [cellMode], CELL_TYPE8
     jmp handle_key_event_end
 
 handle_key_event_end:
     jmp pollevent_loop
 
 
-
 handle_mouse_event:
-
     cmp dword [event + sfMouseButtonEvent.button], sfMouseLeft
     jz  .left_button
     cmp dword [event + sfMouseButtonEvent.button], sfMouseRight
@@ -470,6 +528,25 @@ handle_mouse_event:
 
         pop eax
         pop edx
+        push edx
+        push eax
+
+        push eax
+        push edx
+        push circuit
+        call Circuit_getCellComponent
+        add  esp, 12
+
+        cmp  eax, 0  ;if no component just set cell, else remove component first
+        jz   .set_cell
+
+        push eax
+        call Component_delete
+        add  esp, 4
+
+        .set_cell:
+        pop eax
+        pop edx
 
         push dword [cellMode]
         push eax
@@ -480,9 +557,32 @@ handle_mouse_event:
         jmp handle_mouse_event_end
 
     .right_button:
-        push text_right
-        call printf
-        add  esp, 4
+        sub esp, 8
+        mov eax, esp
+
+        push dword [viewManager + ViewManager.view]
+        push dword [window]
+        push eax
+        call get_mouse_position
+        add  esp, 12
+
+        ;x and y are already pushed
+        push esp ;the place x and y are using will be used
+        push circuit
+        call Circuit_convertWorldToCellCoord
+        add  esp, 8
+
+        pop eax
+        pop edx
+
+        push circuit
+        push dword 0x0
+        push dword eax; y
+        push dword edx; x
+        push dword [cellMode]; type
+        call Component_create
+        add  esp, 20
+
         jmp handle_mouse_event_end
 
 handle_mouse_event_end:

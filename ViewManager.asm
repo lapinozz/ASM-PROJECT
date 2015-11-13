@@ -31,6 +31,18 @@ ViewManager_init:
     mov  eax, [ebp + 24]
     mov  [ebx + ViewManager.smoothness], eax
 
+    push dword [float_const_2_5]
+    push dword [ebx + ViewManager.view]
+    call sfView_zoom
+    add  esp, 8
+
+    fld  dword [ebx + ViewManager.targetCoord + Vector2.x]
+    fadd dword [float_const_1000]
+    fstp dword [ebx + ViewManager.targetCoord + Vector2.x]
+    fld  dword [ebx + ViewManager.targetCoord + Vector2.y]
+    fadd dword [float_const_800]
+    fstp dword [ebx + ViewManager.targetCoord + Vector2.y]
+
 ViewManager_init_end:
     mov esp, ebp
     pop ebp
@@ -89,11 +101,6 @@ ViewManager_update_end:
 ViewManager_zoomAtMouse:
     push ebp
     mov  ebp, esp
-
-    push 1000
-    push int_patern
-    call printf
-    add  esp, 8
 
     mov  ebx, [ebp + 8]
 

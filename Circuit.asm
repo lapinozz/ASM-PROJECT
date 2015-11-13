@@ -23,15 +23,19 @@ endstruc
 struc Cell
     .type resd 1
 
-    .componentPtr resd 1
+    .component resd 1 ;Component*
 
     .size resb 0
 endstruc
 
 CELL_NONE   equ 0
 CELL_OFF    equ 1
-CELL_ON     equ 2
-CELL_ACTIVE equ 3
+CELL_ACTIVE equ 2 ;invered ACTIVE and ON because ACTIVE is more used
+CELL_ON     equ 3
+CELL_TYPE5  equ 4
+CELL_TYPE6  equ 5
+CELL_TYPE7  equ 6
+CELL_TYPE8  equ 7
 
 CELL_COLOR_NONE   equ 0xFF0F0F0F
 CELL_COLOR_OFF    equ 0xFF0000FF
@@ -125,21 +129,13 @@ Circuit_init:
         cmp edx, ecx
         jz Circuit_init_loop_end
 
-        mov dword [ebx + ecx*Cell.size + Cell.type], dword CELL_NONE
-        mov dword [ebx + ecx*Cell.size + Cell.componentPtr], dword 0x0
+;        mov dword [ebx + ecx*Cell.size + Cell.type], dword CELL_NONE
+        mov dword [ebx + ecx*Cell.size + Cell.type], dword CELL_OFF
+        mov dword [ebx + ecx*Cell.size + Cell.component], dword 0x0
 
         inc ecx
         jmp Circuit_init_loop
     Circuit_init_loop_end:
-
-    mov dword [ebx + 11*Cell.size + Cell.type], dword CELL_NONE ;ONLY FORFREAKING TEST PURPOSE AKA DONT FORGET TO REMOVE THIS SHIT
-;    mov dword [ebx + 12*Cell.size + Cell.type], dword 1 ;ONLY FORFREAKING TEST PURPOSE AKA DONT FORGET TO REMOVE THIS SHIT
-;    mov dword [ebx + 13*Cell.size + Cell.type], dword 2 ;ONLY FORFREAKING TEST PURPOSE AKA DONT FORGET TO REMOVE THIS SHIT
-    mov dword [ebx + 14*Cell.size + Cell.type], dword CELL_ACTIVE ;ONLY FORFREAKING TEST PURPOSE AKA DONT FORGET TO REMOVE THIS SHIT
-    mov dword [ebx + 16*Cell.size + Cell.type], dword CELL_NONE ;ONLY FORFREAKING TEST PURPOSE AKA DONT FORGET TO REMOVE THIS SHIT
-;    mov dword [ebx + 17*Cell.size + Cell.type], dword 1 ;ONLY FORFREAKING TEST PURPOSE AKA DONT FORGET TO REMOVE THIS SHIT
-;    mov dword [ebx + 18*Cell.size + Cell.type], dword 2 ;ONLY FORFREAKING TEST PURPOSE AKA DONT FORGET TO REMOVE THIS SHIT
-;    mov dword [ebx + 19*Cell.size + Cell.type], dword 3 ;ONLY FORFREAKING TEST PURPOSE AKA DONT FORGET TO REMOVE THIS SHIT
 
     pop edx
 
@@ -151,7 +147,7 @@ Circuit_init:
         jz Circuit_init_loop_end2
 
         mov dword [ebx + ecx*Cell.size + Cell.type], dword CELL_NONE
-        mov dword [ebx + ecx*Cell.size + Cell.componentPtr], dword 0x0
+        mov dword [ebx + ecx*Cell.size + Cell.component], dword 0x0
 
         inc ecx
         jmp Circuit_init_loop2
@@ -167,6 +163,21 @@ Circuit_init:
     add  esp, 8
 
 Circuit_init_end:
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret
+
+;void Circuit_invertCell(Circuit*)
+Circuit_invertCell:
+    push ebp
+    mov  ebp, esp
+    push ebx
+
+    mov  ebx, [ebp + 8]
+    xor [ebx + Circuit.currentCells], byte 1
+
+Circuit_invertCell_end:
     pop ebx
     mov esp, ebp
     pop ebp
@@ -327,7 +338,6 @@ Circuit_draw:
     mov  eax, [ebx + Circuit.components + Array.start]
 
     mov  edx, [ebx + Circuit.components + Array.count]
-    inc  edx
     xor  ecx, ecx
     .components_loop:
         cmp edx, ecx
@@ -374,13 +384,6 @@ Circuit_setCellType:
     inc eax
 
     mov  ecx, [ebp + 20]
-;
-;    mov  eax, 6
-
-;    push eax
-;    push int_patern
-;    call printf
-;    add  esp, 8
 
     cmp [ebx + Circuit.currentCells], byte 0
     mov edx, Circuit.cells1
@@ -398,6 +401,45 @@ Circuit_setCellType:
     pop  ebx
 
 Circuit_setCellType_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
+;void Circuit_setCellComponent(Circuit*, Vector2i tileCoords, Component* ptr)
+Circuit_setCellComponent:
+    push ebp
+    mov  ebp, esp
+
+    push ebx
+    push eax
+    push ecx
+    push edx
+
+    mov  ebx, [ebp + 8]
+
+    mov  eax, [ebp + 12 + Vector2.y]
+    imul eax, [ebx + Circuit.CircuitSize + Vector2.x]
+    add  eax, [ebp + 12 + Vector2.x]
+    inc eax
+
+    mov  ecx, [ebp + 20]
+
+    cmp [ebx + Circuit.currentCells], byte 0
+    mov edx, Circuit.cells1
+    je .cellChoice_end
+    mov edx, Circuit.cells2
+    .cellChoice_end:
+
+    mov ebx, [ebx + edx + Array.start]
+
+    mov [ebx + eax*Cell.size + Cell.component], ecx
+
+    pop  edx
+    pop  ecx
+    pop  eax
+    pop  ebx
+
+Circuit_setCellComponent_end:
     mov esp, ebp
     pop ebp
     ret
@@ -439,6 +481,43 @@ Circuit_getCellType_end:
     pop ebp
     ret
 
+;Component* Circuit_getCellComponent(Circuit*, Vector2i tileCoord)
+Circuit_getCellComponent:
+    push ebp
+    mov  ebp, esp
+
+    push ebx
+    push ecx
+    push edx
+
+    mov  ebx, [ebp + 8]
+
+    mov  eax, [ebp + 12 + Vector2.y]
+    imul eax, [ebx + Circuit.CircuitSize + Vector2.x]
+    add  eax, [ebp + 12 + Vector2.x]
+    inc eax
+
+    mov  ecx, [ebp + 20]
+
+    cmp [ebx + Circuit.currentCells], byte 0
+    mov edx, Circuit.cells1
+    je .cellChoice_end
+    mov edx, Circuit.cells2
+    .cellChoice_end:
+
+    mov ebx, [ebx + edx + Array.start]
+
+    mov eax, [ebx + eax*Cell.size + Cell.component]
+
+    pop  edx
+    pop  ecx
+    pop  ebx
+
+Circuit_getCellComponent_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
 ;void Circuit_update(Circuit*)
 Circuit_update:
     push ebp
@@ -461,33 +540,6 @@ Circuit_update:
     fld  dword [ebx + Circuit.timeSinceUpdate]
     fsub dword [ebx + Circuit.updateTime]
     fstp dword [ebx + Circuit.timeSinceUpdate]
-
-    mov  eax, [ebx + Circuit.components + Array.start]
-
-    mov  edx, [ebx + Circuit.components + Array.count]
-    inc  edx
-    xor  ecx, ecx
-    .components_loop:
-        cmp edx, ecx
-        jz .components_loop_end
-
-        push eax
-        push edx
-        push ecx
-
-        push dword [eax + ecx*4]
-        call Component_update
-        add  esp, 4
-
-        pop ecx
-        pop edx
-        pop eax
-
-        inc ecx
-        jmp .components_loop
-    .components_loop_end:
-
-    mov  ebx, [ebp + 8]
 
     cmp [ebx + Circuit.currentCells], byte 0
     lea eax, [ebx + Circuit.cells1]
@@ -519,6 +571,9 @@ Circuit_update:
 
         mov edx, dword [eax + ecx*Cell.size + Cell.type]
         push edx
+
+        mov edx, [eax + ecx*Cell.size + Cell.component]
+        mov [ebx + ecx*Cell.size + Cell.component], edx
 
         mov [ebp - 4], dword CELL_NONE
         mov [ebp - 16], dword CELL_NONE
@@ -634,10 +689,10 @@ Circuit_update:
             .case_neighbor_off:
                 mov dword [ebx + ecx*Cell.size + Cell.type], CELL_OFF
                 jmp Circuit_update_loop_case_end
-            .case_neighbor_off_end:
 
-            mov dword [ebx + ecx*Cell.size + Cell.type], CELL_ON
-            jmp Circuit_update_loop_case_end
+            .case_neighbor_off_end:
+                mov dword [ebx + ecx*Cell.size + Cell.type], CELL_ON
+                jmp Circuit_update_loop_case_end
 
         Circuit_update_loop_case_active:
             mov dword [ebx + ecx*Cell.size + Cell.type], CELL_ON
@@ -652,6 +707,30 @@ Circuit_update:
         inc ecx
         jmp Circuit_update_loop
     Circuit_update_loop_end:
+
+    mov  ebx, [ebp + 8]
+    mov  eax, [ebx + Circuit.components + Array.start]
+    mov  edx, [ebx + Circuit.components + Array.count]
+    xor  ecx, ecx
+    .components_loop:
+        cmp edx, ecx
+        jz .components_loop_end
+
+        push eax
+        push edx
+        push ecx
+
+        push dword [eax + ecx*4]
+        call Component_update
+        add  esp, 4
+
+        pop ecx
+        pop edx
+        pop eax
+
+        inc ecx
+        jmp .components_loop
+    .components_loop_end:
 
     mov  ebx, [ebp + 8]
     xor [ebx + Circuit.currentCells], byte 1

@@ -109,12 +109,6 @@ rand_float_min_max:
     fstp dword [ebp - 4]
     mov  eax, [ebp - 4]
 
-    push eax
-    push eax
-    call print_dword_float
-    add  esp, 4
-    pop  eax
-
 rand_float_min_max_end:
     mov esp, ebp
     pop ebp
