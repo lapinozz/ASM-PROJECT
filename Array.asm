@@ -23,9 +23,10 @@ Array_init:
     mov  ecx, [ebp + 16]
     mov  dword [eax + Array.count], ecx
 
-    imul  ecx, ebx ; count * dataSize
+    imul ecx, ebx ; count * dataSize
     push ecx
-    call malloc
+    push 1
+    call calloc
     add  esp, 8
     mov  ebx, [ebp + 8]
     mov [ebx + Array.start], eax

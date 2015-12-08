@@ -11,13 +11,17 @@ BITS 32
 %include "ViewManager.asm"
 %include "Component.asm"
 %include "Circuit.asm"
+%include "KeyHandler.asm"
 
 ;standard function
 EXTERN printf
 
 EXTERN time
 
+EXTERN exit
+
 EXTERN malloc
+EXTERN calloc
 EXTERN realloc
 EXTERN free
 

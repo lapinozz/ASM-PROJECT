@@ -56,6 +56,8 @@ sfQuads           equ 6
 ;Keys
 KEY_Esc   equ 36
 
+sfKeyLShift equ 38
+
 KEY_Tab   equ 60
 
 KEY_Left  equ 71

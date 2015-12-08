@@ -93,7 +93,10 @@ SECTION .bss
 
 ;    map         resb Map.size
     circuit     resb Circuit.size
-    drawCircuit resb Circuit.size
+
+    drawComponent resd Component.size
+
+    keyHandler  resb KeyHandler.size
 
     updateCircuit resb 1;
 
@@ -257,6 +260,56 @@ main:
 
     mov byte [updateCircuit], 1
 
+    push dword keyHandler
+    call KeyHandler_init
+    add esp, 4
+
+    %macro setKey 2
+        push %2
+        push %1
+        push dword keyHandler
+        call KeyHandler_setKeyPressedFunction
+        add  esp, 12
+    %endmacro
+
+    %macro setMouse 2
+        push %2
+        push %1
+        push dword keyHandler
+        call KeyHandler_setMousePressedFunction
+        add  esp, 12
+    %endmacro
+
+    setKey KEY_Esc, exit
+
+    setKey KEY_Left,  handle_key_event.case_key_left
+    setKey KEY_Right, handle_key_event.case_key_right
+    setKey KEY_Up,    handle_key_event.case_key_up
+    setKey KEY_Down,  handle_key_event.case_key_down
+
+    setKey KEY_Tab,  handle_key_event.case_key_tab
+
+    setKey KEY_A,  handle_key_event.case_key_a
+    setKey KEY_S,  handle_key_event.case_key_s
+    setKey KEY_D,  handle_key_event.case_key_d
+    setKey KEY_F,  handle_key_event.case_key_f
+    setKey KEY_G,  handle_key_event.case_key_g
+    setKey KEY_H,  handle_key_event.case_key_h
+    setKey KEY_J,  handle_key_event.case_key_j
+    setKey KEY_K,  handle_key_event.case_key_k
+
+    setKey KEY_1,  handle_key_event.case_key_a
+    setKey KEY_2,  handle_key_event.case_key_s
+    setKey KEY_3,  handle_key_event.case_key_d
+    setKey KEY_4,  handle_key_event.case_key_f
+    setKey KEY_5,  handle_key_event.case_key_g
+    setKey KEY_6,  handle_key_event.case_key_h
+    setKey KEY_7,  handle_key_event.case_key_j
+    setKey KEY_8,  handle_key_event.case_key_k
+
+;    setMouse sfMouseLeft,  handle_mouse_event.left_button
+;    setMouse sfMouseRight, handle_mouse_event.right_button
+
 ;    push circuit
 ;    push dword 0x0
 ;    push dword 4; y
@@ -300,13 +353,45 @@ main_loop:
         cmp  dword [event + sfEvent.type], sfEvtClosed
         jz   main_end
         cmp  dword [event + sfEvent.type], sfEvtKeyPressed
-        jz   handle_key_event
+        jz   .key_pressed
+        cmp  dword [event + sfEvent.type], sfEvtKeyReleased
+        jz   .key_released
         cmp  dword [event + sfEvent.type], sfEvtMouseButtonPressed
-        jz   handle_mouse_event
+        jz   .mouse_pressed
+        cmp  dword [event + sfEvent.type], sfEvtMouseButtonReleased
+        jz   .mouse_released
         cmp  dword [event + sfEvent.type], sfEvtMouseWheelMoved
         jz   handle_wheel_event
+        jmp pollevent_loop
 
+        .key_pressed:
+            push dword [event + sfKeyEvent.keyCode]
+            push dword keyHandler
+            call KeyHandler_keyPressed
+            add  esp, 8
         jmp  pollevent_loop
+
+        .key_released:
+            push dword [event + sfKeyEvent.keyCode]
+            push dword keyHandler
+            call KeyHandler_keyReleased
+            add  esp, 8
+        jmp  pollevent_loop
+
+        .mouse_pressed:
+            push dword [event + sfMouseButtonEvent.button]
+            push dword keyHandler
+            call KeyHandler_mousePressed
+            add  esp, 8
+        jmp  pollevent_loop
+
+        .mouse_released:
+            push dword [event + sfMouseButtonEvent.button]
+            push dword keyHandler
+            call KeyHandler_mouseReleased
+            add  esp, 8
+        jmp  pollevent_loop
+
     pollevent_end:
 
 ;    push dword [total_time + 4] ; print the time
@@ -314,6 +399,8 @@ main_loop:
 ;    push float_patern
 ;    call printf
 ;    add  esp, 12
+
+    call handle_mouse_event
 
     xor edx, edx
     perso_array_update_loop:
@@ -377,6 +464,14 @@ main_loop:
     call Circuit_draw
     add  esp, 8
 
+    push dword sfKeyLShift
+    push dword keyHandler
+    call KeyHandler_isKeyPressed
+    cmp eax, 1
+    jne .dontDrawPreview
+    call draw_component_preview
+    .dontDrawPreview:
+
     push dword [window]
     call sfRenderWindow_display
     add  esp, 4
@@ -389,128 +484,93 @@ main_end:
     mov eax, 0
     ret
 
-
 handle_key_event:
-    cmp dword [event + sfKeyEvent.keyCode], KEY_Left
-    jz  .case_key_left
-    cmp dword [event + sfKeyEvent.keyCode], KEY_Right
-    jz  .case_key_right
-    cmp dword [event + sfKeyEvent.keyCode], KEY_Up
-    jz  .case_key_up
-    cmp dword [event + sfKeyEvent.keyCode], KEY_Down
-    jz  .case_key_down
-
-    cmp dword [event + sfKeyEvent.keyCode], KEY_Esc
-    jz  .case_key_esc
-
-    cmp dword [event + sfKeyEvent.keyCode], KEY_Tab
-    jz  .case_key_tab
-
-    cmp dword [event + sfKeyEvent.keyCode], KEY_A
-    jz  .case_key_a
-    cmp dword [event + sfKeyEvent.keyCode], KEY_S
-    jz  .case_key_s
-    cmp dword [event + sfKeyEvent.keyCode], KEY_D
-    jz  .case_key_d
-    cmp dword [event + sfKeyEvent.keyCode], KEY_F
-    jz  .case_key_f
-    cmp dword [event + sfKeyEvent.keyCode], KEY_G
-    jz  .case_key_g
-    cmp dword [event + sfKeyEvent.keyCode], KEY_H
-    jz  .case_key_h
-    cmp dword [event + sfKeyEvent.keyCode], KEY_J
-    jz  .case_key_j
-    cmp dword [event + sfKeyEvent.keyCode], KEY_K
-    jz  .case_key_k
-    cmp dword [event + sfKeyEvent.keyCode], KEY_1
-    jz  .case_key_a
-    cmp dword [event + sfKeyEvent.keyCode], KEY_2
-    jz  .case_key_s
-    cmp dword [event + sfKeyEvent.keyCode], KEY_3
-    jz  .case_key_d
-    cmp dword [event + sfKeyEvent.keyCode], KEY_4
-    jz  .case_key_f
-    cmp dword [event + sfKeyEvent.keyCode], KEY_5
-    jz  .case_key_g
-    cmp dword [event + sfKeyEvent.keyCode], KEY_6
-    jz  .case_key_h
-    cmp dword [event + sfKeyEvent.keyCode], KEY_7
-    jz  .case_key_j
-    cmp dword [event + sfKeyEvent.keyCode], KEY_8
-    jz  .case_key_k
-
-    jmp handle_key_event_end
 
 .case_key_left:
     fld  dword [float_const_n100]
     fadd dword [viewManager + ViewManager.targetCoord + Vector2.x]
     fstp dword [viewManager + ViewManager.targetCoord + Vector2.x]
-    jmp .case_key_move_end
+    ret
 
 .case_key_right:
     fld  dword [float_const_100]
     fadd dword [viewManager + ViewManager.targetCoord + Vector2.x]
     fstp dword [viewManager + ViewManager.targetCoord + Vector2.x]
-    jmp .case_key_move_end
+    ret
 
 .case_key_up:
     fld  dword [float_const_n100]
     fadd dword [viewManager + ViewManager.targetCoord + Vector2.y]
     fstp dword [viewManager + ViewManager.targetCoord + Vector2.y]
-    jmp .case_key_move_end
+    ret
 
 .case_key_down:
     fld  dword [float_const_100]
     fadd dword [viewManager + ViewManager.targetCoord + Vector2.y]
     fstp dword [viewManager + ViewManager.targetCoord + Vector2.y]
-    jmp .case_key_move_end
-
-.case_key_move_end:
-    jmp handle_key_event_end
-
-.case_key_esc:
-    jmp main_end
+    ret
 
 .case_key_tab:
     xor [updateCircuit], byte 1
-    jmp handle_key_event_end
+    ret
 
 .case_key_a:
     mov  dword [cellMode], CELL_NONE
-    jmp handle_key_event_end
+    ret
 .case_key_s:
     mov  dword [cellMode], CELL_OFF
-    jmp handle_key_event_end
+    ret
 .case_key_d:
     mov  dword [cellMode], CELL_ACTIVE
-    jmp handle_key_event_end
+    ret
 .case_key_f:
     mov  dword [cellMode], CELL_ON
-    jmp handle_key_event_end
+    ret
 .case_key_g:
     mov  dword [cellMode], CELL_TYPE5
-    jmp handle_key_event_end
+    ret
 .case_key_h:
     mov  dword [cellMode], CELL_TYPE6
-    jmp handle_key_event_end
+    ret
 .case_key_j:
     mov  dword [cellMode], CELL_TYPE7
-    jmp handle_key_event_end
+    ret
 .case_key_k:
     mov  dword [cellMode], CELL_TYPE8
-    jmp handle_key_event_end
+    ret
 
 handle_key_event_end:
     jmp pollevent_loop
 
 
 handle_mouse_event:
-    cmp dword [event + sfMouseButtonEvent.button], sfMouseLeft
-    jz  .left_button
-    cmp dword [event + sfMouseButtonEvent.button], sfMouseRight
-    jz  .right_button
+    push ebp
+    mov  ebp, esp
+;    cmp dword [event + sfMouseButtonEvent.button], sfMouseLeft
+;    jz  .left_button
+;    cmp dword [event + sfMouseButtonEvent.button], sfMouseRight
+;    jz  .right_button
+
+    push dword sfMouseLeft
+    push dword keyHandler
+    call KeyHandler_isMousePressed
+    add  esp, 8
+    cmp eax, 1
+    jz .left_button
+
+    push dword sfMouseRight
+    push dword keyHandler
+    call KeyHandler_isMousePressed
+    add  esp, 8
+    cmp eax, 1
+    jz .right_button
+
+    jmp handle_mouse_event_end
 
     .left_button:
+;        push ebp
+;        mov  ebp, esp
+
         sub esp, 8
         mov eax, esp
 
@@ -557,6 +617,9 @@ handle_mouse_event:
         jmp handle_mouse_event_end
 
     .right_button:
+;        push ebp
+;        mov  ebp, esp
+
         sub esp, 8
         mov eax, esp
 
@@ -574,6 +637,25 @@ handle_mouse_event:
 
         pop eax
         pop edx
+        push edx
+        push eax
+
+        push eax
+        push edx
+        push circuit
+        call Circuit_getCellComponent
+        add  esp, 12
+
+        cmp  eax, 0  ;if no component just set cell, else remove component first
+        jz   .right_set_cell
+
+        push eax
+        call Component_delete
+        add  esp, 4
+
+        .right_set_cell:
+        pop eax
+        pop edx
 
         push circuit
         push dword 0x0
@@ -586,7 +668,9 @@ handle_mouse_event:
         jmp handle_mouse_event_end
 
 handle_mouse_event_end:
-    jmp pollevent_loop
+    mov esp, ebp
+    pop ebp
+    ret
 
 handle_wheel_event:
 
@@ -609,3 +693,30 @@ handle_wheel_event:
 
 handle_wheel_event_end:
     jmp pollevent_loop
+
+;void draw_component_preview
+draw_component_preview:
+    push ebp
+    mov  ebp, esp
+
+    sub esp, 8
+    mov ebx, esp
+
+;    mov eax, [cellType]
+;    mov [drawComponent + Component.type], eax
+
+    push dword [viewManager + ViewManager.view]
+    push dword [window]
+    push ebx
+    call get_mouse_position
+    add  esp, 12
+
+;    mov eax, [ebx + Vector2.x]
+;    mov [drawComponent]
+
+    add esp, 8
+
+draw_component_preview_end:
+    mov esp, ebp
+    pop ebp
+    ret

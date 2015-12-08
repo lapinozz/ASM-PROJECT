@@ -1,0 +1,220 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Config.h
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/Export.h
+SFML/Config.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/Ftp.h
+SFML/Network/Export.h
+-
+SFML/Network/IpAddress.h
+-
+SFML/Network/Types.h
+-
+stddef.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/Http.h
+SFML/Network/Export.h
+-
+SFML/Network/Types.h
+-
+SFML/System/Time.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/IpAddress.h
+SFML/Network/Export.h
+-
+SFML/System/Time.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/Packet.h
+SFML/Network/Export.h
+-
+SFML/Network/Types.h
+-
+stddef.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/SocketSelector.h
+SFML/Network/Export.h
+-
+SFML/Network/Types.h
+-
+SFML/System/Time.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/SocketStatus.h
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/TcpListener.h
+SFML/Network/Export.h
+-
+SFML/Network/SocketStatus.h
+-
+SFML/Network/Types.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/TcpSocket.h
+SFML/Network/Export.h
+-
+SFML/Network/IpAddress.h
+-
+SFML/Network/SocketStatus.h
+-
+SFML/Network/Types.h
+-
+SFML/System/Time.h
+-
+stddef.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/Types.h
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Network/UdpSocket.h
+SFML/Network/Export.h
+-
+SFML/Network/IpAddress.h
+-
+SFML/Network/SocketStatus.h
+-
+SFML/Network/Types.h
+-
+stddef.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/System/Export.h
+SFML/Config.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/System/Time.h
+SFML/System/Export.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Internal.h
+stdio.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/Ftp.cpp
+SFML/Network/Ftp.h
+-
+SFML/Network/FtpStruct.h
+-
+SFML/Network/IpAddress.hpp
+-
+SFML/Internal.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/FtpStruct.h
+SFML/Network/Ftp.hpp
+-
+vector
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/Http.cpp
+SFML/Network/Http.h
+-
+SFML/Network/HttpStruct.h
+-
+SFML/Internal.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/HttpStruct.h
+SFML/Network/Http.hpp
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/IpAddress.cpp
+SFML/Network/IpAddress.h
+-
+SFML/Network/IpAddress.hpp
+-
+string.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/Packet.cpp
+SFML/Network/Packet.h
+-
+SFML/Network/PacketStruct.h
+-
+SFML/Internal.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/PacketStruct.h
+SFML/Network/Packet.hpp
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/SocketSelector.cpp
+SFML/Network/SocketSelector.h
+-
+SFML/Network/SocketSelectorStruct.h
+-
+SFML/Network/TcpListenerStruct.h
+-
+SFML/Network/TcpSocketStruct.h
+-
+SFML/Network/UdpSocketStruct.h
+-
+SFML/Internal.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/SocketSelectorStruct.h
+SFML/Network/SocketSelector.hpp
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/TcpListener.cpp
+SFML/Network/TcpListener.h
+-
+SFML/Network/TcpListenerStruct.h
+-
+SFML/Network/TcpSocketStruct.h
+-
+SFML/Internal.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/TcpListenerStruct.h
+SFML/Network/TcpListener.hpp
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/TcpSocket.cpp
+SFML/Network/TcpSocket.h
+-
+SFML/Network/TcpSocketStruct.h
+-
+SFML/Network/PacketStruct.h
+-
+SFML/Network/IpAddress.hpp
+-
+SFML/Internal.h
+-
+string.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/TcpSocketStruct.h
+SFML/Network/TcpSocket.hpp
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/UdpSocket.cpp
+SFML/Network/UdpSocket.h
+-
+SFML/Network/UdpSocketStruct.h
+-
+SFML/Network/PacketStruct.h
+-
+SFML/Network/IpAddress.hpp
+-
+SFML/Internal.h
+-
+string.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Network/UdpSocketStruct.h
+SFML/Network/UdpSocket.hpp
+-
+

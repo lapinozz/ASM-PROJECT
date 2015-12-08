@@ -1,0 +1,98 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/Config.h
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/System/Clock.h
+SFML/System/Export.h
+-
+SFML/System/Time.h
+-
+SFML/System/Types.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/System/Export.h
+SFML/Config.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/System/Mutex.h
+SFML/System/Export.h
+-
+SFML/System/Types.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/System/Sleep.h
+SFML/System/Export.h
+-
+SFML/System/Time.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/System/Thread.h
+SFML/System/Export.h
+-
+SFML/System/Types.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/System/Time.h
+SFML/System/Export.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/include/SFML/System/Types.h
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/Internal.h
+stdio.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/System/Clock.cpp
+SFML/System/Clock.h
+-
+SFML/System/ClockStruct.h
+-
+SFML/Internal.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/System/ClockStruct.h
+SFML/System/Clock.hpp
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/System/Mutex.cpp
+SFML/System/Mutex.h
+-
+SFML/System/MutexStruct.h
+-
+SFML/Internal.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/System/MutexStruct.h
+SFML/System/Mutex.hpp
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/System/Sleep.cpp
+SFML/System/Sleep.h
+-
+SFML/System/Sleep.hpp
+-
+SFML/Internal.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/System/Thread.cpp
+SFML/System/Thread.h
+-
+SFML/System/ThreadStruct.h
+-
+SFML/Internal.h
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/System/ThreadStruct.h
+SFML/System/Thread.hpp
+-
+
+/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1/src/SFML/System/Time.cpp
+SFML/System/Time.h
+-
+
