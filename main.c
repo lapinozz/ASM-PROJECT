@@ -22,7 +22,7 @@ int main(int argc,char **argv)
     printf("%i\n", sizeof(sfRenderStates));
     printf("%i\n", 9*4 + 4 + 4 + 4);
 
-    printf("%i", (int)sfKeyLShift);
+    printf("%i", (int)sfKeyCount);
 
     return EXIT_SUCCESS;
 }

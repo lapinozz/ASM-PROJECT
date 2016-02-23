@@ -9,12 +9,12 @@ COMPONENT_BRIDGE_LEFT_RIGHT equ CELL_TYPE6
 struc Component
     .type          resd 1
 
-    .componentHalfSize resb Vector2.size ;vector2i
     .pos           resb Vector2.size ;vector2i
+    .componentHalfSize resb Vector2.size ;vector2i eg realSize = 3,3 : halfSize = 1,1
 
     .rotation      resd 1
 
-    .circuit       resd 1
+    .circuit       resd 19
 
     .size resb 0
 endstruc
@@ -25,11 +25,14 @@ endstruc
     push dword esp
     push dword [ebx + Component.componentHalfSize + Vector2.y]
     push dword [ebx + Component.componentHalfSize + Vector2.x]
-    push dword 2
+    push dword [ebx + Component.rotation]
     call rotate_point_around_origin
     add esp, 16
 
     mov  eax, [ebx + Component.circuit]
+    fld dword [eax + Circuit.caseSize + Vector2.x]
+    fmul dword [float_const_0_5]
+
     fild  dword [ebx + Component.pos + Vector2.x]
     fiadd dword [esp]
     fmul dword [eax + Circuit.caseSize + Vector2.x]
@@ -37,8 +40,11 @@ endstruc
     fiadd dword [esp + 4]
     fmul dword [eax + Circuit.caseSize + Vector2.y]
 
+    fadd st2  ;compensate for the offset caused by the origin TODO: fix this shit
     fstp dword [esp + 4]
+    fadd
     fstp dword [esp]
+
     push dword [publicSprite]
     call sfSprite_setPosition
     add  esp, 12
@@ -48,6 +54,23 @@ endstruc
     push dword [window]
     call sfRenderWindow_drawSprite
     add  esp, 12
+%endmacro
+
+%macro  component_rotate_sprite 0
+    push dword [float_const_n90]
+    fild dword [ebx + Component.rotation]
+    fmul dword [esp]
+    fstp dword [esp]
+    push dword [publicSprite]
+    call sfSprite_setRotation
+    add  esp, 8
+%endmacro
+
+%macro  component_reset_sprite_rotation 0
+    push dword [float_const_0]
+    push dword [publicSprite]
+    call sfSprite_setRotation
+    add  esp, 8
 %endmacro
 
 ;arg #1 = texture
@@ -65,7 +88,7 @@ endstruc
     push dword esp
     push dword [ebx + Component.componentHalfSize + Vector2.y]
     push dword [ebx + Component.componentHalfSize + Vector2.x]
-    push dword 2
+    push dword [ebx + Component.rotation]
     call rotate_point_around_origin
     add esp, 16
 
@@ -76,14 +99,6 @@ endstruc
     push dword [ebx + Component.circuit]
     call Circuit_getCellComponent
     add  esp, 12
-
-;    push dword [ebx + Component.pos + Vector2.y] ;get the 0, 3 case
-;    add  dword [esp], %2
-;    push dword [ebx + Component.pos + Vector2.x]
-;    add  dword [esp], %1
-;    push dword [ebx + Component.circuit]
-;    call Circuit_getCellComponent
-;    add  esp, 12
 %endmacro
 
 ;arg #1 = x coord #2 = y coord #3 = Component*
@@ -94,7 +109,7 @@ endstruc
     push dword esp
     push dword [ebx + Component.componentHalfSize + Vector2.y]
     push dword [ebx + Component.componentHalfSize + Vector2.x]
-    push dword 2
+    push dword [ebx + Component.rotation]
     call rotate_point_around_origin
     add esp, 16
 
@@ -105,15 +120,6 @@ endstruc
     push dword [ebx + Component.circuit]
     call Circuit_setCellComponent
     add  esp, 16
-
-;    push dword %3
-;    push dword [ebx + Component.pos + Vector2.y]
-;    add  dword [esp], %2
-;    push dword [ebx + Component.pos + Vector2.x]
-;    add  dword [esp], %1
-;    push dword [ebx + Component.circuit]
-;    call Circuit_setCellComponent
-;    add  esp, 16
 %endmacro
 
 ;arg #1 = x coord #2 = y coord
@@ -123,7 +129,7 @@ endstruc
     push dword esp
     push dword [ebx + Component.componentHalfSize + Vector2.y]
     push dword [ebx + Component.componentHalfSize + Vector2.x]
-    push dword 2
+    push dword [ebx + Component.rotation]
     call rotate_point_around_origin
     add esp, 16
 
@@ -134,13 +140,6 @@ endstruc
     push dword [ebx + Component.circuit]
     call Circuit_getCellType
     add  esp, 12
-
-;    push dword [ebx + Component.pos + Vector2.y] ;get the 0, 3 case
-;    add  dword [esp], %2
-;    push dword [ebx + Component.pos + Vector2.x]
-;    add  dword [esp], %1
-;    push dword [ebx + Component.circuit]
-;    add  esp, 12
 %endmacro
 
 ;arg #1 = x coord #2 = y coord #3 = invert cell or not (type have to be already pushed on the stack)
@@ -150,7 +149,7 @@ endstruc
     push dword esp
     push dword [ebx + Component.componentHalfSize + Vector2.y]
     push dword [ebx + Component.componentHalfSize + Vector2.x]
-    push dword 2
+    push dword [ebx + Component.rotation]
     call rotate_point_around_origin
     add esp, 16
 
@@ -159,12 +158,6 @@ endstruc
     mov  dword ecx, [ebx + Component.pos + Vector2.x]
     add  dword [esp], ecx
     push dword [ebx + Component.circuit]
-
-;    push dword [ebx + Component.pos + Vector2.y]
-;    add  dword [esp], %2
-;    push dword [ebx + Component.pos + Vector2.x]
-;    add  dword [esp], %1
-;    push dword [ebx + Component.circuit]
 
     %if %3 == 1
         call Circuit_invertCell
@@ -266,6 +259,31 @@ Component_create:
     pop ebx
     mov eax, [ebp + 8]
 
+    push ebx
+    add dword [esp], Component.componentHalfSize
+    push dword [ebp + 8]
+    push dword [ebp + 24]
+    call Circuit_getHalfsizeFromComponentType
+    add esp, 12
+
+    cmp dword [ebx + Component.rotation], 0
+    jz .no_swap_halfsize
+    cmp dword [ebx + Component.rotation], 2
+    jz .no_swap_halfsize
+        push eax
+        mov eax, dword [ebx + Component.componentHalfSize + Vector2.x]
+        sub eax, dword [ebx + Component.componentHalfSize + Vector2.y]
+
+        sar edx, 0x1f ;get absolute value
+        xor eax, edx
+        sub eax, edx
+
+        sub dword [ebx + Component.pos + Vector2.x], eax
+        add dword [ebx + Component.pos + Vector2.y], eax
+
+        pop eax
+    .no_swap_halfsize:
+
     cmp eax, COMPONENT_AND
     jz  .basic_gate_init
     cmp eax, COMPONENT_OR
@@ -294,9 +312,6 @@ Component_create:
         jmp .end_case
 
     .basic_gate_init:
-        mov dword [ebx + Component.componentHalfSize + Vector2.x], 1
-        mov dword [ebx + Component.componentHalfSize + Vector2.y], 1
-
         component_get_circuit_cell_type 0, 0
         cmp eax, CELL_NONE      ;if cell is already set we dont touch it
         jnz .basic_gate_skip_0_0
@@ -454,6 +469,20 @@ Component_draw:
     sub  esp, 8
 
     mov  ebx, [ebp + 8]
+
+    component_rotate_sprite
+
+    mov  eax, [ebx + Component.circuit]
+
+    sub  esp, 8
+    fld  dword [eax + Circuit.caseSize]
+    fmul dword [float_const_0_5]
+    fst  dword [esp + 4]
+    fstp dword [esp]
+    push dword [publicSprite]
+    call sfSprite_setOrigin
+    add  esp, 8
+
     mov  eax, [ebx + Component.type]
 
     cmp eax, COMPONENT_AND
@@ -491,6 +520,7 @@ Component_draw:
         component_set_sprite_texture [outputTexture]
         component_move_sprite_and_draw [int_const_2], [int_const_0]
         component_set_sprite_texture [componentNotTexture]
+        component_reset_sprite_rotation
         component_move_sprite_and_draw [int_const_1], [int_const_0]
         jmp .end_case
     .case_and:
@@ -505,9 +535,10 @@ Component_draw:
 
     .basic_gate:
         call draw_basic_gate
+        add  esp, 4
+        component_reset_sprite_rotation
         component_set_sprite_texture dword [esp]
         component_move_sprite_and_draw [int_const_1], [int_const_1]
-        add  esp, 4
         jmp .end_case
 
     .end_case:

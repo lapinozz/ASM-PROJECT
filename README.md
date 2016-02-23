@@ -10,7 +10,7 @@ What work:
 	circuit
 	view
 	logic gate
-	rotation of gate(half working)
+	rotation of gate
 
 Todo:	
 	Currently it use mouse, it will make it simpler to develope(and even maybe to play) if it's keyboard-only

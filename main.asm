@@ -49,8 +49,10 @@ SECTION .data
     int_const_2  dd  2
     int_const_3  dd  3
     int_const_4  dd  4
+    int_const_45 dd  45
 
     float_const_n100 dd -100.0
+    float_const_n90 dd -90.0
     float_const_n10 dd -10.0
     float_const_0 dd 0.0
     float_const_0_00001 dd 0.00001
@@ -70,10 +72,13 @@ SECTION .data
     float_const_10 dd 10.0
     float_const_16 dd 16.0
     float_const_30 dd 30.0
+    float_const_45 dd 45.0
     float_const_50 dd 50.0
     float_const_64 dd 64.0
+    float_const_90 dd 90.0
     float_const_100 dd 100.0
     float_const_150 dd 150.0
+    float_const_180 dd 180.0
     float_const_300 dd 300.0
     float_const_500 dd 500.0
     float_const_800 dd 800.0
@@ -100,7 +105,8 @@ SECTION .bss
 
     updateCircuit resb 1;
 
-    cellMode    resd 1
+    cellMode           resd 1
+    currentRotation    resd 1
 
     publicSprite resd 1
 
@@ -247,6 +253,7 @@ main:
 ;    add esp, 20
 
     mov  dword [cellMode], CELL_NONE
+    mov  dword [currentRotation], 0
 
 ;    push dword [float_const_0_5]
     push dword [float_const_0_00001]
@@ -297,6 +304,8 @@ main:
     setKey KEY_H,  handle_key_event.case_key_h
     setKey KEY_J,  handle_key_event.case_key_j
     setKey KEY_K,  handle_key_event.case_key_k
+
+    setKey KEY_R,  handle_key_event.case_key_r
 
     setKey KEY_1,  handle_key_event.case_key_a
     setKey KEY_2,  handle_key_event.case_key_s
@@ -433,7 +442,7 @@ main_loop:
         add  esp, 4
     .skip_circuit_update:
 
-    push dword 0xFF000000 ; abgr black
+    push dword 0xFF111111 ; abgr black
     push dword [window]
     call sfRenderWindow_clear
     add  esp, 8
@@ -539,6 +548,15 @@ handle_key_event:
     mov  dword [cellMode], CELL_TYPE8
     ret
 
+.case_key_r: ;set rotation
+    inc dword [currentRotation]
+    cmp dword [currentRotation], 4
+    jz .reset
+    ret
+    .reset:
+        mov dword [currentRotation], 0
+    ret
+
 handle_key_event_end:
     jmp pollevent_loop
 
@@ -546,10 +564,6 @@ handle_key_event_end:
 handle_mouse_event:
     push ebp
     mov  ebp, esp
-;    cmp dword [event + sfMouseButtonEvent.button], sfMouseLeft
-;    jz  .left_button
-;    cmp dword [event + sfMouseButtonEvent.button], sfMouseRight
-;    jz  .right_button
 
     push dword sfMouseLeft
     push dword keyHandler
@@ -568,8 +582,6 @@ handle_mouse_event:
     jmp handle_mouse_event_end
 
     .left_button:
-;        push ebp
-;        mov  ebp, esp
 
         sub esp, 8
         mov eax, esp
@@ -617,8 +629,6 @@ handle_mouse_event:
         jmp handle_mouse_event_end
 
     .right_button:
-;        push ebp
-;        mov  ebp, esp
 
         sub esp, 8
         mov eax, esp
@@ -658,7 +668,7 @@ handle_mouse_event:
         pop edx
 
         push circuit
-        push dword 0x0
+        push dword [currentRotation] ;rotation
         push dword eax; y
         push dword edx; x
         push dword [cellMode]; type
@@ -704,6 +714,8 @@ draw_component_preview:
 
     mov eax, [cellMode]
     mov [drawComponent + Component.type], eax
+    mov eax, [currentRotation]
+    mov [drawComponent + Component.rotation], eax
 
     push dword [viewManager + ViewManager.view]
     push dword [window]
@@ -718,6 +730,31 @@ draw_component_preview:
 
     pop dword [drawComponent + Component.pos + Vector2.y]
     pop dword [drawComponent + Component.pos + Vector2.x]
+
+    cmp dword [drawComponent + Component.rotation], 0
+    jz .no_swap_halfsize
+    cmp dword [drawComponent + Component.rotation], 2
+    jz .no_swap_halfsize
+        push eax
+        mov eax, dword [drawComponent + Component.componentHalfSize + Vector2.x]
+        sub eax, dword [drawComponent + Component.componentHalfSize + Vector2.y]
+
+        sar edx, 0x1f ;get absolute value
+        xor eax, edx
+        sub eax, edx
+
+        sub dword [drawComponent + Component.pos + Vector2.x], eax
+        add dword [drawComponent + Component.pos + Vector2.y], eax
+
+        pop eax
+    .no_swap_halfsize:
+
+    push drawComponent
+    add dword [esp], Component.componentHalfSize
+    push dword [cellMode]
+    push dword circuit
+    call Circuit_getHalfsizeFromComponentType
+    add esp, 12
 
     mov dword [drawComponent + Component.circuit], circuit
 

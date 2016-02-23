@@ -28,14 +28,19 @@ struc Cell
     .size resb 0
 endstruc
 
-CELL_NONE   equ 0
-CELL_OFF    equ 1
-CELL_ACTIVE equ 2 ;invered ACTIVE and ON because ACTIVE is more used
-CELL_ON     equ 3
+CELL_TYPE1  equ 0
+CELL_TYPE2  equ 1
+CELL_TYPE3  equ 2
+CELL_TYPE4  equ 3
 CELL_TYPE5  equ 4
 CELL_TYPE6  equ 5
 CELL_TYPE7  equ 6
 CELL_TYPE8  equ 7
+
+CELL_NONE   equ CELL_TYPE1
+CELL_OFF    equ CELL_TYPE2
+CELL_ACTIVE equ CELL_TYPE3 ;invered ACTIVE and ON because ACTIVE is more used
+CELL_ON     equ CELL_TYPE4
 
 CELL_COLOR_NONE   equ 0xFF0F0F0F
 CELL_COLOR_OFF    equ 0xFF0000FF
@@ -763,6 +768,52 @@ Circuit_convertWorldToCellCoord:
     pop  dword [ebx + Vector2.x]
 
 Circuit_convertWorldToCellCoord_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
+;void Circuit_getHalfsizeFromComponentType(Circuit*, int type, Vector2i* return)
+Circuit_getHalfsizeFromComponentType:
+    push ebp
+    mov  ebp, esp
+
+    mov eax, [ebp + 12]
+    mov edx, [ebp + 16]
+
+    cmp eax, COMPONENT_AND
+    jz  .basic_gate
+    cmp eax, COMPONENT_OR
+    jz  .basic_gate
+    cmp eax, COMPONENT_XOR
+    jz  .basic_gate
+    cmp eax, COMPONENT_NOT
+    jz  .gate_not
+    cmp eax, COMPONENT_BRIDGE_UP_DOWN
+    jz  .bridge_ud
+    cmp eax, COMPONENT_BRIDGE_LEFT_RIGHT
+    jz  .bridge_lr
+
+    .basic_gate:
+        mov dword [edx + Vector2.x], 1
+        mov dword [edx + Vector2.y], 1
+        jmp Circuit_getHalfsizeFromComponentType_end
+
+    .gate_not:
+        mov dword [edx + Vector2.x], 1
+        mov dword [edx + Vector2.y], 0
+        jmp Circuit_getHalfsizeFromComponentType_end
+
+    .bridge_ud:
+        mov dword [edx + Vector2.x], 0
+        mov dword [edx + Vector2.y], 2
+        jmp Circuit_getHalfsizeFromComponentType_end
+
+    .bridge_lr:
+        mov dword [edx + Vector2.x], 2
+        mov dword [edx + Vector2.y], 0
+        jmp Circuit_getHalfsizeFromComponentType_end
+
+Circuit_getHalfsizeFromComponentType_end:
     mov esp, ebp
     pop ebp
     ret

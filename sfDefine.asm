@@ -24,6 +24,9 @@ EXTERN sfTexture_createFromFile
 EXTERN sfSprite_create
 EXTERN sfSprite_setTexture
 EXTERN sfSprite_setPosition
+EXTERN sfSprite_setOrigin
+EXTERN sfSprite_setRotation
+EXTERN sfSprite_setColor
 EXTERN sfSprite_move
 
 EXTERN sfClock_create
@@ -172,7 +175,6 @@ struc sfRenderStates
     .size      resb 0
 endstruc
 
-
 struc sfVertex
     .position  resb Vector2.size ;sfVector2f
     .color     resd 1
@@ -180,3 +182,16 @@ struc sfVertex
 
     .size      resb 0
 endstruc
+
+struc sfColor
+    .r  resb 8
+    .g  resb 8
+    .b  resb 8
+    .a  resb 8
+
+    .size      resb 0
+endstruc
+
+EXTERN sfWhite
+EXTERN sfRed
+;EXTERN sfWhite

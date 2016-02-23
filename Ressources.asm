@@ -48,7 +48,7 @@ SECTION .bss
     topDownLeftRightTexture resd 1
 
     componentAndTexture resd 1
-    componentOrTexture resd 1
+    componentOrTexture  resd 1
     componentXorTexture resd 1
     componentNotTexture resd 1
 
