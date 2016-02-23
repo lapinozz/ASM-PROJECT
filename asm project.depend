@@ -2511,7 +2511,21 @@
 	<SFML/System.h>
 	<SFML/Graphics.h>
 
-1447442505 source:/home/utilisateur/Documents/hax project/asm and sfml/main.c
+1449605924 source:/home/utilisateur/Documents/hax project/asm and sfml/main.c
+	<stdlib.h>
+	<time.h>
+	<stdio.h>
+	<SFML/System.h>
+	<SFML/Graphics.h>
+	<SFML/Window.h>
+
+1438719082 source:/home/lapinozz/Documents/hax project/asm and sfml/helper.c
+	<stdlib.h>
+	<stdio.h>
+	<SFML/System.h>
+	<SFML/Graphics.h>
+
+1452401377 source:/home/lapinozz/Documents/hax project/asm and sfml/main.c
 	<stdlib.h>
 	<time.h>
 	<stdio.h>

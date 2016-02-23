@@ -1,6 +1,0 @@
-/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1-build/src/SFML/Audio/CMakeFiles/csfml-audio.dir
-/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1-build/src/SFML/Graphics/CMakeFiles/csfml-graphics.dir
-/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1-build/src/SFML/Network/CMakeFiles/csfml-network.dir
-/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1-build/src/SFML/System/CMakeFiles/csfml-system.dir
-/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1-build/src/SFML/Window/CMakeFiles/csfml-window.dir
-/home/utilisateur/Documents/hax project/asm and sfml/lib/CSFML-2.1-build/doc/CMakeFiles/doc.dir

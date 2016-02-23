@@ -7,7 +7,7 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin/Debug/ASM et SFML" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug/exec-debug" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -16,7 +16,7 @@
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="bin/Release/ASM et SFML" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release/exec-release" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -28,15 +28,22 @@
 				</Linker>
 			</Target>
 			<Target title="Asm">
-				<Option output="asm project" prefix_auto="1" extension_auto="1" />
-				<Option type="0" />
+				<Option output="main" prefix_auto="1" extension_auto="1" />
+				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<ExtraCommands>
+					<Add before="./asm" />
+					<Mode after="always" />
+				</ExtraCommands>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-m32" />
 		</Compiler>
 		<Linker>
+			<Add option="-m32" />
 			<Add library="csfml-system" />
 			<Add library="csfml-window" />
 			<Add library="csfml-graphics" />
@@ -76,8 +83,6 @@
 		<Unit filename="Perso.asm">
 			<Option compile="0" />
 			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
 		</Unit>
 		<Unit filename="Ressources.asm">
 			<Option compile="0" />

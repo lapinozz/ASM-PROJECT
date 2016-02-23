@@ -9,7 +9,7 @@ COMPONENT_BRIDGE_LEFT_RIGHT equ CELL_TYPE6
 struc Component
     .type          resd 1
 
-    .componentSize resb Vector2.size ;vector2i
+    .componentHalfSize resb Vector2.size ;vector2i
     .pos           resb Vector2.size ;vector2i
 
     .rotation      resd 1
@@ -20,15 +20,23 @@ struc Component
 endstruc
 
 %macro  component_move_sprite_and_draw 2
+    push dword %2
+    push dword %1
+    push dword esp
+    push dword [ebx + Component.componentHalfSize + Vector2.y]
+    push dword [ebx + Component.componentHalfSize + Vector2.x]
+    push dword 2
+    call rotate_point_around_origin
+    add esp, 16
+
     mov  eax, [ebx + Component.circuit]
     fild  dword [ebx + Component.pos + Vector2.x]
-    fiadd dword %1
+    fiadd dword [esp]
     fmul dword [eax + Circuit.caseSize + Vector2.x]
     fild  dword [ebx + Component.pos + Vector2.y]
-    fiadd dword %2
+    fiadd dword [esp + 4]
     fmul dword [eax + Circuit.caseSize + Vector2.y]
 
-    sub   esp, 8
     fstp dword [esp + 4]
     fstp dword [esp]
     push dword [publicSprite]
@@ -52,45 +60,111 @@ endstruc
 
 ;arg #1 = x coord #2 = y coord
 %macro  component_get_circuit_cell_component 2
-    push dword [ebx + Component.pos + Vector2.y] ;get the 0, 3 case
-    add  dword [esp], %2
-    push dword [ebx + Component.pos + Vector2.x]
-    add  dword [esp], %1
+    push dword %2
+    push dword %1
+    push dword esp
+    push dword [ebx + Component.componentHalfSize + Vector2.y]
+    push dword [ebx + Component.componentHalfSize + Vector2.x]
+    push dword 2
+    call rotate_point_around_origin
+    add esp, 16
+
+    mov  dword ecx [ebx + Component.pos + Vector2.y]
+    add  dword [esp + 4],ecx
+    mov  dword ecx, [ebx + Component.pos + Vector2.x]
+    add  dword [esp], ecx
     push dword [ebx + Component.circuit]
     call Circuit_getCellComponent
     add  esp, 12
+
+;    push dword [ebx + Component.pos + Vector2.y] ;get the 0, 3 case
+;    add  dword [esp], %2
+;    push dword [ebx + Component.pos + Vector2.x]
+;    add  dword [esp], %1
+;    push dword [ebx + Component.circuit]
+;    call Circuit_getCellComponent
+;    add  esp, 12
 %endmacro
 
 ;arg #1 = x coord #2 = y coord #3 = Component*
 %macro  component_set_circuit_cell_component 3
     push dword %3
-    push dword [ebx + Component.pos + Vector2.y]
-    add  dword [esp], %2
-    push dword [ebx + Component.pos + Vector2.x]
-    add  dword [esp], %1
+    push dword %2
+    push dword %1
+    push dword esp
+    push dword [ebx + Component.componentHalfSize + Vector2.y]
+    push dword [ebx + Component.componentHalfSize + Vector2.x]
+    push dword 2
+    call rotate_point_around_origin
+    add esp, 16
+
+    mov  dword ecx, [ebx + Component.pos + Vector2.y]
+    add  dword [esp + 4], ecx
+    mov  dword ecx, [ebx + Component.pos + Vector2.x]
+    add  dword [esp], ecx
     push dword [ebx + Component.circuit]
     call Circuit_setCellComponent
     add  esp, 16
+
+;    push dword %3
+;    push dword [ebx + Component.pos + Vector2.y]
+;    add  dword [esp], %2
+;    push dword [ebx + Component.pos + Vector2.x]
+;    add  dword [esp], %1
+;    push dword [ebx + Component.circuit]
+;    call Circuit_setCellComponent
+;    add  esp, 16
 %endmacro
 
 ;arg #1 = x coord #2 = y coord
 %macro  component_get_circuit_cell_type 2
-    push dword [ebx + Component.pos + Vector2.y] ;get the 0, 3 case
-    add  dword [esp], %2
-    push dword [ebx + Component.pos + Vector2.x]
-    add  dword [esp], %1
+    push dword %2
+    push dword %1
+    push dword esp
+    push dword [ebx + Component.componentHalfSize + Vector2.y]
+    push dword [ebx + Component.componentHalfSize + Vector2.x]
+    push dword 2
+    call rotate_point_around_origin
+    add esp, 16
+
+    mov  dword ecx, [ebx + Component.pos + Vector2.y]
+    add  dword [esp + 4], ecx
+    mov  dword ecx, [ebx + Component.pos + Vector2.x]
+    add  dword [esp], ecx
     push dword [ebx + Component.circuit]
     call Circuit_getCellType
     add  esp, 12
+
+;    push dword [ebx + Component.pos + Vector2.y] ;get the 0, 3 case
+;    add  dword [esp], %2
+;    push dword [ebx + Component.pos + Vector2.x]
+;    add  dword [esp], %1
+;    push dword [ebx + Component.circuit]
+;    add  esp, 12
 %endmacro
 
-;arg #1 = x coord #2 = y coord #3 = type(have to be already pushed on the stack)
+;arg #1 = x coord #2 = y coord #3 = invert cell or not (type have to be already pushed on the stack)
 %macro  component_set_circuit_cell_type 2-3 1
-    push dword [ebx + Component.pos + Vector2.y]
-    add  dword [esp], %2
-    push dword [ebx + Component.pos + Vector2.x]
-    add  dword [esp], %1
+    push dword %2
+    push dword %1
+    push dword esp
+    push dword [ebx + Component.componentHalfSize + Vector2.y]
+    push dword [ebx + Component.componentHalfSize + Vector2.x]
+    push dword 2
+    call rotate_point_around_origin
+    add esp, 16
+
+    mov  dword ecx, [ebx + Component.pos + Vector2.y]
+    add  dword [esp + 4], ecx
+    mov  dword ecx, [ebx + Component.pos + Vector2.x]
+    add  dword [esp], ecx
     push dword [ebx + Component.circuit]
+
+;    push dword [ebx + Component.pos + Vector2.y]
+;    add  dword [esp], %2
+;    push dword [ebx + Component.pos + Vector2.x]
+;    add  dword [esp], %1
+;    push dword [ebx + Component.circuit]
 
     %if %3 == 1
         call Circuit_invertCell
@@ -220,6 +294,9 @@ Component_create:
         jmp .end_case
 
     .basic_gate_init:
+        mov dword [ebx + Component.componentHalfSize + Vector2.x], 1
+        mov dword [ebx + Component.componentHalfSize + Vector2.y], 1
+
         component_get_circuit_cell_type 0, 0
         cmp eax, CELL_NONE      ;if cell is already set we dont touch it
         jnz .basic_gate_skip_0_0

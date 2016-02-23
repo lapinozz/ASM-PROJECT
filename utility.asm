@@ -255,9 +255,90 @@ get_mouse_position_end:
     pop ebp
     ret
 
+;void rotate_point(int rotation, Vector2* point) // 1 = 90deg, 2 = 180deg 3 = 270deg
+rotate_point:
+    push ebp
+    mov  ebp, esp
+    push edx
+    push eax
+
+    mov eax, [ebp + 8]
+    cmp eax, 0
+    jz rotate_point_end
+    cmp eax, 4
+    jz rotate_point_end
+
+    mov edx, [ebp + 12]
+
+    cmp eax, 1
+    jz .rot_1
+    cmp eax, 2
+    jz .rot_2
+    cmp eax, 3
+    jz .rot_3
+
+    jmp rotate_point_end
+
+    .rot_1:
+        push dword [edx + Vector2.x]
+        push dword [edx + Vector2.y]
+        pop  dword [edx + Vector2.x]
+        pop  dword [edx + Vector2.y]
+        neg  dword [edx + Vector2.y]
+        jmp rotate_point_end
+
+    .rot_2:
+        neg  dword [edx + Vector2.x]
+        neg  dword [edx + Vector2.y]
+        jmp rotate_point_end
+
+    .rot_3:
+        push dword [edx + Vector2.y]
+        push dword [edx + Vector2.x]
+        pop  dword [edx + Vector2.y]
+        pop  dword [edx + Vector2.x]
+        neg  dword [edx + Vector2.x]
+        jmp rotate_point_end
+
+rotate_point_end:
+    pop eax
+    pop edx
+    mov esp, ebp
+    pop ebp
+    ret
+
+;void rotate_point_around_origin(int rotation, Vector2 origin, Vector2* point) // 1 = 90deg, 2 = 180deg 3 = 270deg
+rotate_point_around_origin:
+    push ebp
+    mov  ebp, esp
+    push edx
+    push eax
+
+    mov edx, [ebp + 20]
+    mov eax, [ebp + 12 + Vector2.x]
+    sub [edx + Vector2.x], eax
+    mov eax, [ebp + 12 + Vector2.y]
+    sub [edx + Vector2.y], eax
+
+    push dword [ebp + 20]
+    push dword [ebp + 8]
+    call rotate_point
+    add esp, 8
+
+    mov edx, [ebp + 20]
+    mov eax, [ebp + 12 + Vector2.x]
+    add [edx + Vector2.x], eax
+    mov eax, [ebp + 12 + Vector2.y]
+    add [edx + Vector2.y], eax
+
+rotate_point_around_origin_end:
+    pop eax
+    pop edx
+    mov esp, ebp
+    pop ebp
+    ret
 
 ;function patern
-
 ;function definition
 ;function_name:
 ;    push ebp

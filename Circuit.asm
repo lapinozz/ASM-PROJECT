@@ -129,8 +129,8 @@ Circuit_init:
         cmp edx, ecx
         jz Circuit_init_loop_end
 
-;        mov dword [ebx + ecx*Cell.size + Cell.type], dword CELL_NONE
-        mov dword [ebx + ecx*Cell.size + Cell.type], dword CELL_OFF
+        mov dword [ebx + ecx*Cell.size + Cell.type], dword CELL_NONE
+;        mov dword [ebx + ecx*Cell.size + Cell.type], dword CELL_OFF
         mov dword [ebx + ecx*Cell.size + Cell.component], dword 0x0
 
         inc ecx

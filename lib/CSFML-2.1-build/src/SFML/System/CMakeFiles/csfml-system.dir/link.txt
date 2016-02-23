@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -O3 -DNDEBUG   -shared -Wl,-soname,libcsfml-system.so.2 -o ../../../lib/libcsfml-system.so.2.1 CMakeFiles/csfml-system.dir/Clock.cpp.o CMakeFiles/csfml-system.dir/Mutex.cpp.o CMakeFiles/csfml-system.dir/Sleep.cpp.o CMakeFiles/csfml-system.dir/Thread.cpp.o CMakeFiles/csfml-system.dir/Time.cpp.o -lsfml-system 

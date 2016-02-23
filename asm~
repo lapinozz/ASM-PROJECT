@@ -1,4 +1,4 @@
-nasm -f elf -g main.asm
-gcc -c helper.c -o helper.o
-g++ helper.o main.o -lcsfml-graphics -lcsfml-window -lcsfml-system -o main
+nasm -f elf32 -g main.asm
+gcc -m32 -g -c helper.c -o helper.o
+g++ -m32 helper.o main.o -lcsfml-graphics -lcsfml-window -lcsfml-system -lsfml-system -lsfml-window -lsfml-graphics -o main
 

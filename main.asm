@@ -1,4 +1,4 @@
-BITS 32
+[BITS 32]
 
 %include "define.asm"
 
@@ -702,8 +702,8 @@ draw_component_preview:
     sub esp, 8
     mov ebx, esp
 
-;    mov eax, [cellType]
-;    mov [drawComponent + Component.type], eax
+    mov eax, [cellMode]
+    mov [drawComponent + Component.type], eax
 
     push dword [viewManager + ViewManager.view]
     push dword [window]
@@ -711,11 +711,22 @@ draw_component_preview:
     call get_mouse_position
     add  esp, 12
 
-;    mov eax, [ebx + Vector2.x]
-;    mov [drawComponent]
+    push esp ;the place x and y are using will be used
+    push circuit
+    call Circuit_convertWorldToCellCoord
+    add  esp, 8
 
+    pop dword [drawComponent + Component.pos + Vector2.y]
+    pop dword [drawComponent + Component.pos + Vector2.x]
+
+    mov dword [drawComponent + Component.circuit], circuit
+
+    push dword [window]
+    push drawComponent
+    call Component_draw
     add esp, 8
 
+;    add esp, 8
 draw_component_preview_end:
     mov esp, ebp
     pop ebp
