@@ -8,9 +8,9 @@ In the campaign you will have to build CPU
 
 What work:
 	circuit
-	view
-	logic gate
-	rotation of gate
+	view (movement, zoom, everything smoothed :D)
+	logic gate (and, or, xor, not and bridge)
+	rotation of gate (rotation of sprite too a part from the name sprite)
 
 Todo:	
 	Currently it use mouse, it will make it simpler to develope(and even maybe to play) if it's keyboard-only
