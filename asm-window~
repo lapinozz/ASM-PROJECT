@@ -1,3 +1,0 @@
-nasm -f win32 --prefix _ -o main.obj main.asm
-#gcc -g -c helper.c -o helper.o
-i586-mingw32msvc-g++ -L./lib/CSFML-msvc main.obj -lcsfml-graphics -lcsfml-window -lcsfml-system -o main.exe
