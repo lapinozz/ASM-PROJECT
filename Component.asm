@@ -23,8 +23,17 @@ endstruc
     push dword %2
     push dword %1
     push dword esp
+
+    ;rotate around center
     push dword [ebx + Component.componentHalfSize + Vector2.y]
     push dword [ebx + Component.componentHalfSize + Vector2.x]
+    ;rotate around center
+
+    ;rotate around top left corner
+;    push dword 0
+;    push dword 0
+    ;rotate around top left corner
+
     push dword [ebx + Component.rotation]
     call rotate_point_around_origin
     add esp, 16

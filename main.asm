@@ -584,16 +584,20 @@ handle_mouse_event:
     push ebp
     mov  ebp, esp
 
-    push dword sfMouseLeft
+;    push dword sfMouseLeft
+    push dword KEY_Q
     push dword keyHandler
-    call KeyHandler_isMousePressed
+;    call KeyHandler_isMousePressed
+    call KeyHandler_isKeyPressed
     add  esp, 8
     cmp eax, 1
     jz .left_button
 
-    push dword sfMouseRight
+;    push dword sfMouseRight
+    push dword KEY_E
     push dword keyHandler
-    call KeyHandler_isMousePressed
+;    call KeyHandler_isMousePressed
+    call KeyHandler_isKeyPressed
     add  esp, 8
     cmp eax, 1
     jz .right_button
@@ -605,25 +609,30 @@ handle_mouse_event:
         sub esp, 8
         mov eax, esp
 
-        push dword [viewManager + ViewManager.view]
-        push dword [window]
-        push eax
-        call get_mouse_position
-        add  esp, 12
+;        push dword [viewManager + ViewManager.view]
+;        push dword [window]
+;        push eax
+;        call get_mouse_position
+;        add  esp, 12
 
-        ;x and y are already pushed
-        push esp ;the place x and y are using will be used
-        push circuit
-        call Circuit_convertWorldToCellCoord
-        add  esp, 8
+;        ;x and y are already pushed
+;        push esp ;the place x and y are using will be used
+;        push circuit
+;        call Circuit_convertWorldToCellCoord
+;        add  esp, 8
 
-        pop eax
-        pop edx
-        push edx
-        push eax
+;        pop eax
+;        pop edx
+;        push edx
+;        push eax
 
-        push eax
-        push edx
+
+;        push eax
+;        push edx
+        push dword [currentTile + Vector2.x]
+        push dword [currentTile + Vector2.y]
+        push dword [currentTile + Vector2.x]
+        push dword [currentTile + Vector2.y]
         push circuit
         call Circuit_getCellComponent
         add  esp, 12
@@ -652,25 +661,29 @@ handle_mouse_event:
         sub esp, 8
         mov eax, esp
 
-        push dword [viewManager + ViewManager.view]
-        push dword [window]
-        push eax
-        call get_mouse_position
-        add  esp, 12
-
-        ;x and y are already pushed
-        push esp ;the place x and y are using will be used
-        push circuit
-        call Circuit_convertWorldToCellCoord
-        add  esp, 8
-
-        pop eax
-        pop edx
-        push edx
-        push eax
-
-        push eax
-        push edx
+;        push dword [viewManager + ViewManager.view]
+;        push dword [window]
+;        push eax
+;        call get_mouse_position
+;        add  esp, 12
+;
+;        ;x and y are already pushed
+;        push esp ;the place x and y are using will be used
+;        push circuit
+;        call Circuit_convertWorldToCellCoord
+;        add  esp, 8
+;
+;        pop eax
+;        pop edx
+;        push edx
+;        push eax
+;
+;        push eax
+;        push edx
+        push dword [currentTile + Vector2.x]
+        push dword [currentTile + Vector2.y]
+        push dword [currentTile + Vector2.x]
+        push dword [currentTile + Vector2.y]
         push circuit
         call Circuit_getCellComponent
         add  esp, 12
@@ -736,6 +749,13 @@ draw_component_preview:
     mov eax, [currentRotation]
     mov [drawComponent + Component.rotation], eax
 
+    push drawComponent
+    add dword [esp], Component.componentHalfSize
+    push dword [cellMode]
+    push dword circuit
+    call Circuit_getHalfsizeFromComponentType
+    add esp, 12
+
     push dword [viewManager + ViewManager.view]
     push dword [window]
     push ebx
@@ -747,33 +767,39 @@ draw_component_preview:
     call Circuit_convertWorldToCellCoord
     add  esp, 8
 
+;center around origin
+    mov eax, dword [drawComponent + Component.componentHalfSize + Vector2.y]
+    sub [esp], eax
+;center around origin
+
     pop dword [drawComponent + Component.pos + Vector2.y]
+
+;center around origin
+    mov eax, dword [drawComponent + Component.componentHalfSize + Vector2.x]
+    sub [esp], eax
+;center around origin
+
     pop dword [drawComponent + Component.pos + Vector2.x]
 
-    cmp dword [drawComponent + Component.rotation], 0
-    jz .no_swap_halfsize
-    cmp dword [drawComponent + Component.rotation], 2
-    jz .no_swap_halfsize
-        push eax
-        mov eax, dword [drawComponent + Component.componentHalfSize + Vector2.x]
-        sub eax, dword [drawComponent + Component.componentHalfSize + Vector2.y]
-
-        sar edx, 0x1f ;get absolute value
-        xor eax, edx
-        sub eax, edx
-
-        sub dword [drawComponent + Component.pos + Vector2.x], eax
-        add dword [drawComponent + Component.pos + Vector2.y], eax
-
-        pop eax
-    .no_swap_halfsize:
-
-    push drawComponent
-    add dword [esp], Component.componentHalfSize
-    push dword [cellMode]
-    push dword circuit
-    call Circuit_getHalfsizeFromComponentType
-    add esp, 12
+;center around top left corner
+;    cmp dword [drawComponent + Component.rotation], 0
+;    jz .no_swap_halfsize
+;    cmp dword [drawComponent + Component.rotation], 2
+;    jz .no_swap_halfsize
+;        push eax
+;        mov eax, dword [drawComponent + Component.componentHalfSize + Vector2.x]
+;        sub eax, dword [drawComponent + Component.componentHalfSize + Vector2.y]
+;
+;        sar edx, 0x1f ;get absolute value
+;        xor eax, edx
+;        sub eax, edx
+;
+;        sub dword [drawComponent + Component.pos + Vector2.x], eax
+;        add dword [drawComponent + Component.pos + Vector2.y], eax
+;
+;        pop eax
+;    .no_swap_halfsize:
+;center around top left corner
 
     mov dword [drawComponent + Component.circuit], circuit
 

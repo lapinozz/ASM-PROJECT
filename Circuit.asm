@@ -772,6 +772,33 @@ Circuit_convertWorldToCellCoord_end:
     pop ebp
     ret
 
+;void Circuit_convertCellToWorldCoord(Circuit*, Vector2i* returnAddr, Vector2f coord)
+Circuit_convertCellToWorldCoord:
+    push ebp
+    mov  ebp, esp
+
+    sub  esp, 8
+
+    mov  ebx, [ebp + 8]
+    fld   dword [ebp + 16 + Vector2.x]
+    fmul  dword [ebx + Circuit.caseSize + Vector2.x]
+;    fadd  dword [float_const_0_5]
+    fistp dword [esp]
+
+    fld   dword [ebp + 16 + Vector2.y]
+    fmul  dword [ebx + Circuit.caseSize + Vector2.y]
+;    fadd  dword [float_const_0_5]
+    fistp dword [esp + 4]
+
+    mov  ebx, [ebp + 12]
+    pop  dword [ebx + Vector2.y]
+    pop  dword [ebx + Vector2.x]
+
+Circuit_convertCellToWorldCoord_end:
+    mov esp, ebp
+    pop ebp
+    ret
+
 ;void Circuit_getHalfsizeFromComponentType(Circuit*, int type, Vector2i* return)
 Circuit_getHalfsizeFromComponentType:
     push ebp
