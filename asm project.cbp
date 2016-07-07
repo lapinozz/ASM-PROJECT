@@ -64,12 +64,6 @@
 			<Option compile="0" />
 			<Option link="0" />
 		</Unit>
-		<Unit filename="Game.asm">
-			<Option compile="0" />
-			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
 		<Unit filename="KeyHandler.asm">
 			<Option compile="0" />
 			<Option link="0" />
@@ -110,10 +104,6 @@
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
-		</Unit>
-		<Unit filename="macros.asm">
-			<Option compile="0" />
-			<Option link="0" />
 		</Unit>
 		<Unit filename="main.asm">
 			<Option compile="0" />

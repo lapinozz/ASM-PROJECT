@@ -107,6 +107,7 @@ SECTION .bss
 
     cellMode           resd 1
     currentRotation    resd 1
+    currentTile        resd Vector2.size
 
     publicSprite resd 1
 
@@ -481,6 +482,16 @@ main_loop:
     call draw_component_preview
     .dontDrawPreview:
 
+    mov ebx, drawComponent
+    mov dword [drawComponent + Component.circuit], circuit
+    push dword [currentTile + Vector2.y]
+    push dword [currentTile + Vector2.x]
+    pop  dword [drawComponent + Component.pos + Vector2.x]
+    pop  dword [drawComponent + Component.pos + Vector2.y]
+    mov  byte [drawComponent + Component.rotation], 0
+    component_set_sprite_texture [selectorTexture]
+    component_move_sprite_and_draw [int_const_0], [int_const_0]
+
     push dword [window]
     call sfRenderWindow_display
     add  esp, 4
@@ -496,24 +507,32 @@ main_end:
 handle_key_event:
 
 .case_key_left:
+    dec dword [currentTile + Vector2.x]
+
     fld  dword [float_const_n100]
     fadd dword [viewManager + ViewManager.targetCoord + Vector2.x]
     fstp dword [viewManager + ViewManager.targetCoord + Vector2.x]
     ret
 
 .case_key_right:
+    inc dword [currentTile + Vector2.x]
+
     fld  dword [float_const_100]
     fadd dword [viewManager + ViewManager.targetCoord + Vector2.x]
     fstp dword [viewManager + ViewManager.targetCoord + Vector2.x]
     ret
 
 .case_key_up:
+    dec dword [currentTile + Vector2.y]
+
     fld  dword [float_const_n100]
     fadd dword [viewManager + ViewManager.targetCoord + Vector2.y]
     fstp dword [viewManager + ViewManager.targetCoord + Vector2.y]
     ret
 
 .case_key_down:
+    inc dword [currentTile + Vector2.y]
+
     fld  dword [float_const_100]
     fadd dword [viewManager + ViewManager.targetCoord + Vector2.y]
     fstp dword [viewManager + ViewManager.targetCoord + Vector2.y]

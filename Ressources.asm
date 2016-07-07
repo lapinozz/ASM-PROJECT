@@ -4,6 +4,8 @@ SECTION .data
     font_file          db './res/font/default_font.ttf' , 0
     maptileset_texture_file   db './res/img/tileset.png', 0
 
+    selector_texture_file  db './res/img/selector.png', 0
+
     input_texture_file  db './res/img/component_input.png', 0
     output_texture_file db './res/img/component_output.png', 0
 
@@ -34,6 +36,8 @@ SECTION .bss
 
     inputTexture resd 1
     outputTexture resd 1
+
+    selectorTexture resd 1
 
     topDownTexture          resd 1
     leftRightTexture        resd 1
@@ -87,6 +91,8 @@ load_resources:
 
     loadTexture input_texture_file, inputTexture
     loadTexture output_texture_file, outputTexture
+
+    loadTexture selector_texture_file, selectorTexture
 
     loadTexture top_down_texture_file, topDownTexture
     loadTexture left_right_texture_file, leftRightTexture

@@ -535,10 +535,10 @@ Component_draw:
 
     .basic_gate:
         call draw_basic_gate
-        add  esp, 4
         component_reset_sprite_rotation
         component_set_sprite_texture dword [esp]
         component_move_sprite_and_draw [int_const_1], [int_const_1]
+        add  esp, 4
         jmp .end_case
 
     .end_case:

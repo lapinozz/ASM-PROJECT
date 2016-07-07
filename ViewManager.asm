@@ -125,7 +125,7 @@ ViewManager_zoomAtMouse:
     push dword [ebx + ViewManager.view]
     call sfView_zoom
     add  esp, 8
-;
+
     mov eax, esp
     mov ebx, [ebp + 8]
 
@@ -142,8 +142,8 @@ ViewManager_zoomAtMouse:
     fld  dword [ebx + ViewManager.targetCoord + Vector2.y]
     fsub dword [esp + 4]
     fstp dword [ebx + ViewManager.targetCoord + Vector2.y]
-;
-;ViewManager_zoomAtMouse_end:
+
+ViewManager_zoomAtMouse_end:
     mov esp, ebp
     pop ebp
     ret
